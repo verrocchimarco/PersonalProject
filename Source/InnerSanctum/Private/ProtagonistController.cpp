@@ -9,6 +9,7 @@
 #include "ProtagonistCharacter.h"
 #include "Kismet/KismetSystemLibrary.h"
 #include "Math/UnrealMathUtility.h"
+#include "PlayerMenuWidget.h"
 
 void AProtagonistController::BeginPlay()
 {
@@ -25,6 +26,11 @@ void AProtagonistController::BeginPlay()
         UE_LOG(LogTemp, Error, TEXT("PlayerCamera component not set!"));
         UKismetSystemLibrary::QuitGame(GetWorld(),this,EQuitPreference::Quit,true);
     }
+    WidgetInventory = Cast<UPlayerMenuWidget>(CreateWidget(this, WidgetInventoryClass,TEXT("Inventory Menu")));
+    if(!WidgetInventory)
+        UE_LOG(LogTemp, Error, TEXT("WidgetClass component not set!"));
+    WidgetInventory->SetVisibility(ESlateVisibility::Collapsed);
+	WidgetInventory->AddToViewport();
 }
 void AProtagonistController::Tick(float DeltaSeconds)
 {
@@ -41,6 +47,7 @@ void AProtagonistController::SetupInputComponent()
     InputComponent->BindAxis(TEXT("StrafeRight"),   this,   &AProtagonistController::StrafeRight);
     InputComponent->BindAxis(TEXT("LookUp"),        this,   &AProtagonistController::LookUp);
     InputComponent->BindAxis(TEXT("LookRight"),     this,   &AProtagonistController::LookRight);
+    InputComponent->BindAction(TEXT("Inventory"), EInputEvent::IE_Pressed, this, &AProtagonistController::ToggleInventory);
 }
 
 void AProtagonistController::MoveForward(float axisValue)
@@ -72,4 +79,34 @@ void AProtagonistController::CameraRotationInterp(const float& DeltaSeconds, flo
     playerDesiredRotation.Yaw = uPlayerCamera->GetComponentRotation().Yaw;
     playerStepRotation = FMath::RInterpConstantTo(playerRotation, playerDesiredRotation, DeltaSeconds, fCameraBasedRotationSpeed + playerSpeed*0.4f);
     aControlledCharacter->SetActorRotation(playerStepRotation);
+}
+void AProtagonistController::ToggleInventory()
+{
+    if(!bIsInventoryOpen)
+    {
+        bIsInventoryOpen = true;
+        FInputModeGameAndUI fInputMode;
+        fInputMode.SetHideCursorDuringCapture(true);
+        fInputMode.SetWidgetToFocus(WidgetInventory->TakeWidget());
+        Cast<UCharacterMovementComponent>(aControlledCharacter->GetMovementComponent())->DisableMovement();
+        SetIgnoreLookInput(true);
+        bShowMouseCursor=true;
+        bEnableClickEvents=true;
+        bEnableMouseOverEvents=true;
+        WidgetInventory->RequestInventoryUpdate();
+        WidgetInventory->SetVisibility(ESlateVisibility::Visible);
+        SetInputMode(fInputMode);
+    }
+    else
+    {
+        bIsInventoryOpen = false;
+        FInputModeGameOnly fInputMode;
+        Cast<UCharacterMovementComponent>(aControlledCharacter->GetMovementComponent())->SetMovementMode(EMovementMode::MOVE_Walking);
+        ResetIgnoreLookInput();
+        bShowMouseCursor=false;
+        bEnableClickEvents=false;
+        bEnableMouseOverEvents=false;
+        WidgetInventory->SetVisibility(ESlateVisibility::Collapsed);
+        SetInputMode(fInputMode);
+    }
 }

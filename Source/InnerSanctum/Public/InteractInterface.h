@@ -30,10 +30,10 @@ class INNERSANCTUM_API IInteractInterface
 
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 	public:
-		UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
+		UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
 		void SetVisibilityGlow();
-		UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
-		void UnsetVisibilityGlow();
+		// UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
+		// void UnsetVisibilityGlow();
 		UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 		void DoInteract(AActor* InteractingActor);
 		UFUNCTION(BlueprintNativeEvent, BlueprintCallable)

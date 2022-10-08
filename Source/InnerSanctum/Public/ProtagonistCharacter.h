@@ -54,12 +54,8 @@ class INNERSANCTUM_API AProtagonistCharacter : public ACharacter
 
 		FText InteractableDescription;
 		FTimerHandle tInteractableSphereCheckTimer,tInteractableLineCheckTimer;
-		FHitResult ActorInInteractionRange;
-		UPROPERTY()
-		TArray<FHitResult> ActorsInFocus;
 		UPROPERTY()
 		AActor* FocusedActor;
-		TArray<AActor *, FDefaultAllocator> ActorsToIgnore;
 		FCollisionQueryParams CharacterIgnoreParam;	
 	protected:
 		// Called when the game starts or when spawned
@@ -74,11 +70,11 @@ class INNERSANCTUM_API AProtagonistCharacter : public ACharacter
 		// Called every frame
 		virtual void Tick(float DeltaTime) override;
 		// Getters
-		UFUNCTION(BlueprintCallable)
+		UFUNCTION(BlueprintCallable, BlueprintPure)
 		UCameraComponent* GetCamera() const { return uCamera; };
-		UFUNCTION(BlueprintCallable)
+		UFUNCTION(BlueprintCallable, BlueprintPure)
 		USpringArmComponent* GetSpringArm() const { return uSpringArm; };
-		UFUNCTION(BlueprintCallable)
+		UFUNCTION(BlueprintCallable, BlueprintPure)
 		UWidgetComponent* GetInteractPrompt() const { return wInteractPrompt; };
 		
 		// Movement

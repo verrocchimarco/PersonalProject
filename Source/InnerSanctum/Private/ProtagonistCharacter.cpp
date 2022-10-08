@@ -39,6 +39,7 @@ AProtagonistCharacter::AProtagonistCharacter()
     uSpringArm->bInheritRoll = false;
     uSpringArm->bUsePawnControlRotation = true;
     uCamera->bUsePawnControlRotation = true;
+    uSpringArm->bEnableCameraLag = true;
 }
 void AProtagonistCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
@@ -73,33 +74,40 @@ void AProtagonistCharacter::Tick(float DeltaTime)
 void AProtagonistCharacter::CastInteractableLineTrace()
 {
     AActor* HitActor;
+    TArray<AActor*> placeholder_array;
+    FHitResult ActorInInteractionRange;
     // Retrieve an object the character can interact with
 
-    GetWorld()->LineTraceSingleByChannel(
-                                        ActorInInteractionRange,
-                                        uCamera->GetComponentLocation(),
-										uCamera->GetComponentLocation() + uCamera->GetForwardVector()*InteractableFocusReach,
-										ECollisionChannel::ECC_Visibility,
-                                        CharacterIgnoreParam
+    UKismetSystemLibrary::CapsuleTraceSingle(
+        GetWorld(),
+        uCamera->GetComponentLocation(),
+        uCamera->GetComponentLocation() + uCamera->GetForwardVector()*InteractableFocusReach,
+        4.f,
+        .5f,
+        UEngineTypes::ConvertToTraceType(ECollisionChannel::ECC_Visibility),
+        false,
+        placeholder_array,
+        EDrawDebugTrace::None,
+        ActorInInteractionRange,
+        true
     );
     // DrawDebugLine(GetWorld(), uCamera->GetComponentLocation(), uCamera->GetComponentLocation() + uCamera->GetForwardVector()*InteractableFocusReach, FColor::Orange,false,0.5f,0,4.f);
     HitActor = ActorInInteractionRange.GetActor();
     if(HitActor && HitActor->Implements<UInteractInterface>())
     {
-        FocusedActor = HitActor;
-        // UE_LOG(LogTemp, Display, TEXT("Actor in focus %s"), *(FocusedActor->GetName()));
+        FocusedActor = HitActor;    
     }
     else
+    {
         FocusedActor = nullptr;
+    }
     UpdateInteractionWidget(FocusedActor,ActorInInteractionRange.ImpactPoint);
-    
 }
 void AProtagonistCharacter::CastInteractableSphereTrace()
 {
     AActor* HitActor;
-    TArray<FHitResult> HitObjectsInFocus;
     TArray<AActor*> placeholder_spheretrace_array;
-    TArray<FHitResult> CurrentIterationActors;
+    TArray<FHitResult> ActorsInFocus;
     // Retrieve all interactable actors nearby
     UKismetSystemLibrary::SphereTraceMulti(
                                             GetWorld(),
@@ -112,40 +120,14 @@ void AProtagonistCharacter::CastInteractableSphereTrace()
                                             EDrawDebugTrace::None,
                                             ActorsInFocus,
                                             true
-                                            // FLinearColor::Blue,
-                                            // FLinearColor::Green,
-                                            // 1.f
     );
-    CurrentIterationActors = ActorsInFocus;
     // Enable VisibilityGlow for all actors in sphere range if they implement the Interact Interface
-    for(auto hitActor : CurrentIterationActors)
+    for(auto hitObject : ActorsInFocus)
     {
-        HitActor= hitActor.GetActor();
+        HitActor = hitObject.GetActor();
         if(HitActor && HitActor->Implements<UInteractInterface>())
         {
-            if(!ActorsToIgnore.Contains(HitActor))
-            {
-                IInteractInterface::Execute_SetVisibilityGlow(HitActor);
-                // Add newly set interactables actors to the ActorsToIgnore array so that they won't be retriggered in following calls
-                ActorsToIgnore.Add(HitActor);
-            }
-        }
-    }
-    // Disable VisibilityGlow for all actors that are outside range
-    for(auto alreadyFocused : ActorsToIgnore)
-    {
-        // Filter the CurrentIterationActors array with only the valid objects that implement the Interact Interface
-        HitObjectsInFocus = CurrentIterationActors.FilterByPredicate([](const FHitResult& HitObject){ return HitObject.GetActor() && HitObject.GetActor()->Implements<UInteractInterface>();});
-        // for(auto HitObject : HitObjectsInFocus)
-        // {
-        //    UE_LOG(LogTemp, Display, TEXT("HitActorInFocus that uses the interface [%s]"), *(HitObject.GetActor()->GetName())); 
-        // }
-        // If the actor in ActorsToIgnore is not in the list of valid actors that have been found by the sphere trace, remove it and unset the visibility glow
-        if(!HitObjectsInFocus.ContainsByPredicate([&alreadyFocused](const FHitResult& HitObject){ return HitObject.GetActor()->GetName() == alreadyFocused->GetName();}))
-        {
-            // UE_LOG(LogTemp, Display, TEXT("Actor %s Not found"), *(alreadyFocused->GetName()));
-            IInteractInterface::Execute_UnsetVisibilityGlow(alreadyFocused);
-            ActorsToIgnore.Remove(alreadyFocused);
+            IInteractInterface::Execute_SetVisibilityGlow(HitActor);
         }
     }
 }
@@ -154,7 +136,7 @@ void AProtagonistCharacter::UpdateInteractionWidget_Implementation(AActor* Inter
     if(InteractableActor)
     {
         wInteractPrompt->SetVisibility(true);
-        wInteractPrompt->SetWorldLocation(FMath::VInterpTo(wInteractPrompt->GetComponentLocation(),TraceImpactPoint,GetWorld()->GetDeltaSeconds(),100.f));
+        wInteractPrompt->SetWorldLocation(FMath::VInterpTo(wInteractPrompt->GetComponentLocation(),TraceImpactPoint,GetWorld()->GetDeltaSeconds(),250.f));
     }
     else
         wInteractPrompt->SetVisibility(false);

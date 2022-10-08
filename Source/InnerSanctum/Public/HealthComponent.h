@@ -48,7 +48,11 @@ class INNERSANCTUM_API UHealthComponent : public UActorComponent
 	public:	
 		// Called every frame
 		virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
-
+		// Getters
+		UFUNCTION(BlueprintCallable, BlueprintPure)
+		float GetMaxHealth() const { return fMaxHealth; }
+		UFUNCTION(BlueprintCallable, BlueprintPure)
+		float GetCurrentHealth() const { return fCurrentHealth; }
 		UFUNCTION()
 		void OnTakePointDamage(AActor* DamagedActor, float Damage, class AController* InstigatedBy, FVector HitLocation, UPrimitiveComponent* FHitComponent, FName BoneName, FVector ShotFromDirection, const class UDamageType* DamageType, AActor* DamageCauser );
 };

@@ -11,11 +11,14 @@
  */
 class AProtagonistCharacter;
 class UCameraComponent;
+class UPlayerMenuWidget;
+class UUserWidget;
 UCLASS()
 class INNERSANCTUM_API AProtagonistController : public APlayerController
 {
 	GENERATED_BODY()
 	private:
+		UPROPERTY()
 		AProtagonistCharacter* aControlledCharacter;
 		UCameraComponent*	 uPlayerCamera;
 		// Camera based rotation
@@ -27,6 +30,12 @@ class INNERSANCTUM_API AProtagonistController : public APlayerController
 		float fHorizontalSensitivity = 50.f;
 		UPROPERTY(EditAnywhere, meta=(DisplayName="Vertical Sensitivity"))
 		float fVerticalSensitivity = 30.f;
+		// Inventory
+		UPROPERTY(EditAnywhere)
+		TSubclassOf<UUserWidget> WidgetInventoryClass;
+		UPROPERTY(BlueprintReadWrite, meta=(AllowPrivateAccess="true"))
+		UPlayerMenuWidget* WidgetInventory;
+		bool bIsInventoryOpen = false;
 	protected:
 		virtual void BeginPlay() override;
 		virtual void Tick(float DeltaSeconds) override;
@@ -41,4 +50,6 @@ class INNERSANCTUM_API AProtagonistController : public APlayerController
 		// Camera based rotation
 		void CameraRotationInterp(const float& DeltaSeconds, float& playerSpeed);
 		virtual void SetupInputComponent() override;
+		// Inventory HUD
+		void ToggleInventory();
 };

@@ -4,47 +4,71 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "UsableObjects.h"
 #include "InventoryComponent.generated.h"
 
-class UTexture2D;
-USTRUCT(BlueprintType)
-struct FInventoryItem
-{
-    GENERATED_BODY()
 
-    //~ The following member variable will be accessible by Blueprint Graphs:
-    // This is the tooltip for our test variable.
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Basic Description", meta=(DisplayName="Item Name"))
-    FText tItemName;
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Basic Description", meta=(DisplayName="Item Description"))
-    FText tItemDescription;
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Basic Description", meta=(DisplayName="Item Picture"))
-    UTexture2D* texItemPicture;
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Special Item Flag", meta=(DisplayName="Is Key Item"))
-    bool bIsKeyItem;
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Special Item Flag", meta=(DisplayName="Is Upgrade"))
-    bool bIsUpgrade;
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Special Item Flag", meta=(DisplayName="Is Weapon"))
-    bool bIsWeapon;
-    UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Size", meta=(DisplayName="Occupied Slots"))
-    int iSlotSize;
-};
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class INNERSANCTUM_API UInventoryComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
-public:	
-	// Sets default values for this component's properties
-	UInventoryComponent();
+    private:
+        UPROPERTY(EditDefaultsOnly, Category="Pockets")
+        int PocketsInventorySize = 3;
+        UPROPERTY(VisibleAnywhere, Category="Pockets")
+        int availablePocketsSpace;
+        UPROPERTY(EditAnywhere, Category="Backpack")
+        bool bHasBackpack = true;
+        UPROPERTY(EditAnywhere, Category="Backpack")
+        int BackpackInventorySize = 4;
+        UPROPERTY(VisibleAnywhere, Category="Backpack")
+        int availableBackpackSpace;
+        TArray<AUsableObjects*> BackpackHeldItems;
+        TArray<AUsableObjects*> PocketsHeldItems;
+        AUsableObjects* EquippedItem = nullptr;
 
-protected:
-	// Called when the game starts
-	virtual void BeginPlay() override;
+    public:	
+        // Sets default values for this component's properties
+        UInventoryComponent();
 
-public:	
-	// Called every frame
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+    protected:
+        // Called when the game starts
+        virtual void BeginPlay() override;
 
-		
+    public:	
+        // Called every frame
+        virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+        
+        // Getters
+        UFUNCTION(BlueprintCallable, BlueprintPure)
+        TArray<AUsableObjects*> GetPocketsHeldItems() const{ return PocketsHeldItems; }
+        UFUNCTION(BlueprintCallable, BlueprintPure)
+        TArray<AUsableObjects*> GetBackpackHeldItems() const{ return BackpackHeldItems; }
+        UFUNCTION(BlueprintCallable, BlueprintPure)
+        int GetPocketsInventorySize() const{ return PocketsInventorySize; }
+        UFUNCTION(BlueprintCallable, BlueprintPure)
+        int GetBackpackInventorySize() const{ return BackpackInventorySize; }
+        UFUNCTION(BlueprintCallable, BlueprintPure)
+        bool hasBackpack() const{ return bHasBackpack; }
+        UFUNCTION(BlueprintCallable, BlueprintPure)
+        FInventoryItem GetEquippedItemData() { if(EquippedItem) return EquippedItem->GetInventoryDetails(); else return FInventoryItem() ; }
+        AUsableObjects* GetEquippedItem() { return EquippedItem; }
+        AUsableObjects* GetItemRefAtIndex(int index, bool isBackpackInventory);
+
+        // Items Management
+        UFUNCTION(BlueprintCallable)
+        bool AddItem(AUsableObjects* newItem);
+        UFUNCTION(BlueprintCallable)
+        bool UseItemAtIndex(int index, bool isBackpackInventory);
+        UFUNCTION(BlueprintCallable)
+        bool RemoveItemAtIndex(int index, bool isBackpackInventory);
+        UFUNCTION(BlueprintCallable)
+        TSubclassOf<AUsableObjects> GetItemAtIndex(int index, bool isBackpackInventory);
+        UFUNCTION(BlueprintCallable)
+        bool EquipItem(int index, bool isBackpackInventory);
+        UFUNCTION(BlueprintCallable)
+        void UnequipItem();
+        UFUNCTION(BlueprintCallable)
+        bool SwitchInventoryItems(int firstItemIndex, bool isFirstItemInBackpack, int secondItemIndex, bool isSecondItemInBackpack);
 };

@@ -2,6 +2,12 @@ Binaries
 DerivedDataCache
 Intermediate
 Saved
+Content/Megascans
+Content/MetaHumans
+Content/MSPresets
+Content/Characters
+Content/UE_Characters
+Content/Weapon_Pack
 .vscode
 .vs
 *.VC.db

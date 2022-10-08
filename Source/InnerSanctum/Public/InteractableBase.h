@@ -8,37 +8,38 @@
 #include "InteractableBase.generated.h"
 
 class UStaticMeshComponent;
-class UDynamicMaterial;
+class UMaterialInstanceDynamic;
 UCLASS(Blueprintable)
 class INNERSANCTUM_API AInteractableBase : public AActor, public IInteractInterface
 {
 	GENERATED_BODY()
-	
-	private:	
-		
 	protected:
-		UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Interaction Params")
-		TEnumAsByte<InteractionType> InteractionType = NoMovement;
 		UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		UStaticMeshComponent* EmissiveMesh;
-		UPROPERTY(EditAnywhere, Category = "Interaction Params")
+		UPROPERTY(EditInstanceOnly, BlueprintReadWrite)
+		UMaterialInstanceDynamic* DynamicEmissiveMaterial;
+
+		UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Interaction Params|Emissive Material")
 		int EmissiveMaterialIndex = 0;
-		UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Interaction Params")
-		float EmissiveMaterialMaxStrength = 0.f;
-		UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Interaction Params")
-		float EmissiveMaterialDeltaTime = 0.f;
+		UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Interaction Params|Emissive Material")
+		float EmissiveMaterialMaxStrength = 5.f;
+		UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Interaction Params|Emissive Material")
+		float EmissiveMaterialDeltaTime = 1.f;
+		
 		UPROPERTY(EditAnywhere,BlueprintReadOnly, Category ="Interaction Params")
-		FString PromptDescription;
+		FText PromptDescription;
+		UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Interaction Params", meta=(DisplayName="Forces Character Movement"))
+		TEnumAsByte<InteractionType> InteractableMovementDisplacement = NoMovement;
 		// Called when the game starts or when spawned
 		virtual void BeginPlay() override;
-
 	public:	
 		// Sets default values for this actor's properties
 		AInteractableBase();
 		// Called every frame
 		virtual void Tick(float DeltaTime) override;
 		//Getters
-		UFUNCTION(BlueprintCallable)
+		UFUNCTION()
 		int GetEmissiveMaterialIndex() const { return EmissiveMaterialIndex; };
-
+		UFUNCTION()
+		UMaterialInstanceDynamic* GetEmissiveMaterial() const { return DynamicEmissiveMaterial; }
 };
