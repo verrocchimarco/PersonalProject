@@ -31,4 +31,3 @@ void UUpgrade::TickComponent(float DeltaTime, ELevelTick TickType, FActorCompone
 
 	// ...
 }
-

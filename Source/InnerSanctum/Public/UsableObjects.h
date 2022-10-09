@@ -4,9 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "InteractableBase.h"
 #include "UsableObjects.generated.h"
 
-class AInteractableBase;
 UENUM(BlueprintType)
 enum ItemCategory
 {

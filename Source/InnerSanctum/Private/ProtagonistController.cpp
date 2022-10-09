@@ -90,6 +90,7 @@ void AProtagonistController::ToggleInventory()
         fInputMode.SetWidgetToFocus(WidgetInventory->TakeWidget());
         Cast<UCharacterMovementComponent>(aControlledCharacter->GetMovementComponent())->DisableMovement();
         SetIgnoreLookInput(true);
+        aControlledCharacter->DisableInput(this);
         bShowMouseCursor=true;
         bEnableClickEvents=true;
         bEnableMouseOverEvents=true;
@@ -107,6 +108,7 @@ void AProtagonistController::ToggleInventory()
         bEnableClickEvents=false;
         bEnableMouseOverEvents=false;
         WidgetInventory->SetVisibility(ESlateVisibility::Collapsed);
+        aControlledCharacter->EnableInput(this);
         SetInputMode(fInputMode);
     }
 }
