@@ -29,6 +29,7 @@ class INNERSANCTUM_API UInventoryComponent : public UActorComponent
         TArray<AUsableObjects*> TBackpackHeldItems;
         TArray<UUpgrade*> TUpgrades;
         AUsableObjects* EquippedItem = nullptr;
+        bool bIsEquippedItemDrawn = false;
 
     public:	
         // Sets default values for this component's properties
@@ -63,6 +64,8 @@ class INNERSANCTUM_API UInventoryComponent : public UActorComponent
         FInventoryItem GetEquippedItemData() { if(EquippedItem) return EquippedItem->GetInventoryDetails(); else return FInventoryItem() ; }
         AUsableObjects* GetEquippedItem() { return EquippedItem; }
         AUsableObjects* GetItemRefAtIndex(int index, bool isBackpackInventory);
+        UFUNCTION(BlueprintCallable, BlueprintPure)
+        bool IsEquippedItemDrawn() const { return bIsEquippedItemDrawn; }
             // Upgrades getters
         UFUNCTION(BlueprintCallable, BlueprintPure)
         TArray<UUpgrade*> GetUpgrades() const{ return TUpgrades; }
@@ -97,8 +100,7 @@ class INNERSANCTUM_API UInventoryComponent : public UActorComponent
         int FindEquippedItem();
         UFUNCTION(BlueprintCallable)
         bool IsEquippedItem(int index, bool isBackpackInventory);
-        bool DrawEquippedItem() const;
-        bool SheatheEquippedItem() const;
+        void ToggleDrawEquippedItem();
         // Upgrades Management
         UFUNCTION(BlueprintCallable)
         bool AddUpgrade(UUpgrade* newUpgrade);

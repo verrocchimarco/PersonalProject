@@ -49,7 +49,6 @@ void AProtagonistController::SetupInputComponent()
     InputComponent->BindAxis(TEXT("LookUp"),        this,   &AProtagonistController::LookUp);
     InputComponent->BindAxis(TEXT("LookRight"),     this,   &AProtagonistController::LookRight);
     InputComponent->BindAction(TEXT("Inventory"), EInputEvent::IE_Pressed, this, &AProtagonistController::ToggleInventory);
-    // InputComponent->BindAction(TEXT("ToggleDraw"), EInputEvent::IE_Pressed, this, &AProtagonistController::ToggleDraw);
     InputComponent->BindAction(TEXT("ReadyUpItem"), EInputEvent::IE_Pressed, this, &AProtagonistController::Aim);
     InputComponent->BindAction(TEXT("ReadyUpItem"), EInputEvent::IE_Released, this, &AProtagonistController::StopAim);
 }
@@ -95,7 +94,6 @@ void AProtagonistController::StopAim()
     bIsAiming = false;
     aControlledCharacter->SetIsEquipReady(false);
     PlayerCameraManager->UnlockFOV();
-    
 }
 
 void AProtagonistController::ToggleInventory()
@@ -106,8 +104,6 @@ void AProtagonistController::ToggleInventory()
         FInputModeUIOnly fInputMode;
         fInputMode.SetWidgetToFocus(WidgetPlayerMenu->TakeWidget());
         Cast<UCharacterMovementComponent>(aControlledCharacter->GetMovementComponent())->DisableMovement();
-        // SetIgnoreLookInput(true);
-        // aControlledCharacter->DisableInput(this);
         bShowMouseCursor=true;
         bEnableClickEvents=true;
         bEnableMouseOverEvents=true;
@@ -120,7 +116,6 @@ void AProtagonistController::ToggleInventory()
         bIsInventoryOpen = false;
         FInputModeGameOnly fInputMode;
         Cast<UCharacterMovementComponent>(aControlledCharacter->GetMovementComponent())->SetMovementMode(EMovementMode::MOVE_Walking);
-        // ResetIgnoreLookInput();
         bShowMouseCursor=false;
         bEnableClickEvents=false;
         bEnableMouseOverEvents=false;

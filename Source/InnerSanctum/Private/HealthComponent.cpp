@@ -3,6 +3,7 @@
 
 #include "HealthComponent.h"
 #include "ProtagonistCharacter.h"
+#include "InnerSanctumGameModeBase.h"
 #include "Kismet/GameplayStatics.h"
 // Sets default values for this component's properties
 UHealthComponent::UHealthComponent()
@@ -39,6 +40,10 @@ void UHealthComponent::OnTakePointDamage(AActor* DamagedActor, float Damage, cla
 {
 	fCurrentHealth = FMath::Clamp( fCurrentHealth-Damage, 0.f, fMaxHealth);
 	UE_LOG(LogTemp, Display, TEXT("Current Health: %f"), fCurrentHealth);
+	if(!fCurrentHealth && DamagedActor && OnDeathDelegate.IsBound())
+	{
+		OnDeathDelegate.Broadcast();
+	}
 }
 
 // TODO proper 

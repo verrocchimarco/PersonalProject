@@ -11,7 +11,7 @@ UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class INNERSANCTUM_API UHealthComponent : public UActorComponent
 {
 	GENERATED_BODY()
-
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDeathDelegate);
 	private:
 		UPROPERTY(EditAnywhere, Category="Health", meta=(DisplayName="Max Health"))
 		float fMaxHealth = 100.f;
@@ -45,7 +45,9 @@ class INNERSANCTUM_API UHealthComponent : public UActorComponent
 		// Called when the game starts
 		virtual void BeginPlay() override;
 
-	public:	
+	public:
+		UPROPERTY(BlueprintAssignable)
+		FDeathDelegate OnDeathDelegate;
 		// Called every frame
 		virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 		// Getters

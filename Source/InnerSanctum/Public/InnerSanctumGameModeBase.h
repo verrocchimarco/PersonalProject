@@ -9,9 +9,16 @@
 /**
  * 
  */
+class AProtagonistCharacter;
 UCLASS()
 class INNERSANCTUM_API AInnerSanctumGameModeBase : public AGameModeBase
 {
 	GENERATED_BODY()
-	
+	private:
+		AProtagonistCharacter* protagonistCharacter;
+	protected:
+		virtual void BeginPlay() override;
+	public:
+		UFUNCTION()
+		void ActorKilled();
 };

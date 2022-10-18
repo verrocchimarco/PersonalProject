@@ -26,7 +26,7 @@ AProtagonistCharacter::AProtagonistCharacter()
     uHealthComponent     = CreateDefaultSubobject<UHealthComponent>(TEXT("Health Component"));
     uInventoryComponent  = CreateDefaultSubobject<UInventoryComponent>(TEXT("Inventory Component"));
 
-    uSpringArm->SetupAttachment(RootComponent);
+    uSpringArm->SetupAttachment(GetMesh(),"clavicle_CameraSocket");
     uCamera->SetupAttachment(uSpringArm);
     wInteractPrompt->SetupAttachment(RootComponent);
 
@@ -106,7 +106,7 @@ void AProtagonistCharacter::CastInteractableLineTrace()
     {
         FocusedActor = nullptr;
     }
-    UpdateInteractionWidget(FocusedActor,ActorInInteractionRange.ImpactPoint);
+    UpdateInteractionWidget(FocusedActor,ActorInInteractionRange.Location);
 }
 void AProtagonistCharacter::CastInteractableSphereTrace()
 {
@@ -186,7 +186,7 @@ void AProtagonistCharacter::CallInteraction()
 {
     if(FocusedActor)
     {
-        if(IInteractInterface::Execute_GetInteractionType(FocusedActor) == InteractionType::NoMovement)
+        if(IInteractInterface::Execute_GetInteractionType(FocusedActor) == InteractionType::EButton)
             IInteractInterface::Execute_DoInteract(FocusedActor, this);
     }
 }
@@ -194,7 +194,7 @@ void AProtagonistCharacter::CallMoveInteraction()
 {
     if(FocusedActor)
     {
-        if(IInteractInterface::Execute_GetInteractionType(FocusedActor) == InteractionType::MoveCharacter)
+        if(IInteractInterface::Execute_GetInteractionType(FocusedActor) == InteractionType::SpaceButton)
         {
             IInteractInterface::Execute_DoInteract(FocusedActor,this);
         }
@@ -218,24 +218,15 @@ void AProtagonistCharacter::SetIsEquipReady(bool newReady)
 // 
 void AProtagonistCharacter::ToggleDrawEquippedItem()
 {
-    if (!bIsEquipDrawn)
-    {
-        bIsEquipDrawn = uInventoryComponent->DrawEquippedItem();
-        UE_LOG(LogTemp, Display, TEXT("You don't have the item drawn. Item ready bro? %d"), bIsEquipDrawn);
-    }
-    else 
-    {
-        bIsEquipDrawn = !(uInventoryComponent->SheatheEquippedItem());
-        UE_LOG(LogTemp, Display, TEXT("You have the item drawn. Item sheathed bro? %d"), bIsEquipDrawn);
-    }
+    uInventoryComponent->ToggleDrawEquippedItem();
 }
 
 // Use equipped item if the item is drawn and ready to be used. If the item usage has expired, bIsEquipDrawn will be set to false
 void AProtagonistCharacter::UseEquippedItem()
 {
-    if(bIsEquipDrawn && bIsReadyToUseEquip)
+    if(bIsReadyToUseEquip && uInventoryComponent->IsEquippedItemDrawn())
     {
-        bIsEquipDrawn = !(uInventoryComponent->UseEquippedItem());
+        uInventoryComponent->UseEquippedItem();
     }
     UE_LOG(LogTemp, Display, TEXT("Final usage result: %d"),bIsEquipDrawn);
 }

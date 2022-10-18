@@ -28,8 +28,8 @@ class INNERSANCTUM_API AInteractableBase : public AActor, public IInteractInterf
 		
 		UPROPERTY(EditAnywhere,BlueprintReadOnly, Category ="Interaction Params")
 		FText PromptDescription;
-		UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Interaction Params", meta=(DisplayName="Forces Character Movement"))
-		TEnumAsByte<InteractionType> InteractableMovementDisplacement = NoMovement;
+		UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Interaction Params", meta=(DisplayName="Interaction Input"))
+		TEnumAsByte<InteractionType> InteractableButtonResponse = EButton;
 		// Called when the game starts or when spawned
 		virtual void BeginPlay() override;
 	public:	

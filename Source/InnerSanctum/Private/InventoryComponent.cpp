@@ -172,6 +172,7 @@ bool UInventoryComponent::RemoveItemAtIndex(int index, bool isBackpackInventory,
 			FVector spawningLocation = GetOwner()->GetActorLocation();
 			FActorSpawnParameters spawnParameters;
 			spawningLocation.X += 25;
+			spawnParameters.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 			GetWorld()->SpawnActor(ObjectReference->GetPickupClassReference(),&spawningLocation,0);
 		}
 		ObjectReference->Destroy();
@@ -329,8 +330,8 @@ bool UInventoryComponent::EquipItem(int index, bool isBackpackInventory)
 		newEquippedItem = TBackpackHeldItems[index];
 		equipSuccessful = true;
 	}
-	// If previously equipped item was being used, play switch animation
-	if(equipSuccessful && newEquippedItem && EquippedItem && EquippedItem->IsActive())
+	// If previously equipped item was being held, play switch animation
+	if(equipSuccessful && newEquippedItem && EquippedItem && bIsEquippedItemDrawn)
 	{
 		EquippedItem->DisableItem();
 		EquippedItem = newEquippedItem;
@@ -345,9 +346,10 @@ bool UInventoryComponent::EquipItem(int index, bool isBackpackInventory)
 
 void UInventoryComponent::UnequipItem()
 {
-	if(EquippedItem && EquippedItem->IsActive())
+	if(EquippedItem && bIsEquippedItemDrawn)
 	{
 		EquippedItem->DisableItem();
+		bIsEquippedItemDrawn = false;
 	}
 	EquippedItem = nullptr;
 }
@@ -373,6 +375,10 @@ bool UInventoryComponent::UseEquippedItem()
 				RemoveItemAtIndex(TPocketsHeldItems.Find(EquippedItem),false,false);
 			}
 		}
+	}
+	if(bIsEquippedItemDrawn)
+	{
+		bIsEquippedItemDrawn = !hasItemExpired;
 	}
 	return hasItemExpired;
 }
@@ -400,14 +406,23 @@ bool UInventoryComponent::IsEquippedItem(int index, bool isBackpackInventory)
 	targetInventory = (isBackpackInventory) ? TBackpackHeldItems : TPocketsHeldItems;
 	return (targetInventory.IsValidIndex(index) && EquippedItem && targetInventory[index] == EquippedItem);
 }
-bool UInventoryComponent::DrawEquippedItem() const
+void UInventoryComponent::ToggleDrawEquippedItem()
 {
-	return EquippedItem && EquippedItem->ActivateItem();
+	if(EquippedItem)
+	{
+		if(bIsEquippedItemDrawn)
+		{
+			bIsEquippedItemDrawn = false;
+			EquippedItem->DisableItem();
+		}
+		else
+		{
+			bIsEquippedItemDrawn = true;
+			EquippedItem->ActivateItem();
+		}
+	}
 }
-bool UInventoryComponent::SheatheEquippedItem() const
-{
-	return EquippedItem && EquippedItem->DisableItem();
-}
+
 bool UInventoryComponent::AddUpgrade(UUpgrade* newUpgrade)
 {
 	if(!newUpgrade)

@@ -83,6 +83,7 @@ class INNERSANCTUM_API AProtagonistCharacter : public ACharacter
 		USpringArmComponent* GetSpringArm() const { return uSpringArm; };
 		UFUNCTION(BlueprintCallable, BlueprintPure)
 		UWidgetComponent* GetInteractPrompt() const { return wInteractPrompt; };
+		UFUNCTION(BlueprintCallable, BlueprintPure)
 		UHealthComponent* GetHealthComponent() const { return uHealthComponent; };
 		// Movement
 		void StartSprint();

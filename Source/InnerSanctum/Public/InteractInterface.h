@@ -9,8 +9,8 @@
 UENUM()
 enum InteractionType
 {
-	MoveCharacter UMETA(DisplayName = "MoveCharacter"),
-	NoMovement    UMETA(DisplayName = "NoMovement"),
+	SpaceButton UMETA(DisplayName = "SpaceButton"),
+	EButton     UMETA(DisplayName = "EButton"),
 };
 
 class AActor;
@@ -32,8 +32,6 @@ class INNERSANCTUM_API IInteractInterface
 	public:
 		UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
 		void SetVisibilityGlow();
-		// UFUNCTION(BlueprintImplementableEvent, BlueprintCallable)
-		// void UnsetVisibilityGlow();
 		UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 		void DoInteract(AActor* InteractingActor);
 		UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
