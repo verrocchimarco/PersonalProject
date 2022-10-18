@@ -40,3 +40,22 @@ void UHealthComponent::OnTakePointDamage(AActor* DamagedActor, float Damage, cla
 	fCurrentHealth = FMath::Clamp( fCurrentHealth-Damage, 0.f, fMaxHealth);
 	UE_LOG(LogTemp, Display, TEXT("Current Health: %f"), fCurrentHealth);
 }
+
+// TODO proper 
+bool UHealthComponent::HealHealth(float healingAmount)
+{
+	if(fCurrentHealth < fMaxHealth)
+	{
+		fCurrentHealth = FMath::Min(fCurrentHealth+healingAmount, fMaxHealth);
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
+void UHealthComponent::UpdateHealth(float healingAmount)
+{
+	fCurrentHealth = FMath::Clamp(fCurrentHealth+healingAmount,0.f, fMaxHealth);
+}

@@ -25,8 +25,8 @@ class INNERSANCTUM_API UInventoryComponent : public UActorComponent
         int BackpackInventorySize = 4;
         UPROPERTY(VisibleAnywhere, Category="Backpack")
         int fAvailableBackpackSpace;
-        TArray<AUsableObjects*> TBackpackHeldItems;
         TArray<AUsableObjects*> TPocketsHeldItems;
+        TArray<AUsableObjects*> TBackpackHeldItems;
         TArray<UUpgrade*> TUpgrades;
         AUsableObjects* EquippedItem = nullptr;
 
@@ -81,16 +81,24 @@ class INNERSANCTUM_API UInventoryComponent : public UActorComponent
         UFUNCTION(BlueprintCallable)
         bool UseItemAtIndex(int index, bool isBackpackInventory);
         UFUNCTION(BlueprintCallable)
-        bool RemoveItemAtIndex(int index, bool isBackpackInventory);
+        bool RemoveItemAtIndex(int index, bool isBackpackInventory, bool shouldSpawnPickup=true);
         UFUNCTION(BlueprintCallable)
         TSubclassOf<AUsableObjects> GetItemAtIndex(int index, bool isBackpackInventory);
         UFUNCTION(BlueprintCallable)
         bool SwitchInventoryItems(int firstItemIndex, bool isFirstItemInBackpack, int secondItemIndex, bool isSecondItemInBackpack);
+        
         // Equipped item Management
         UFUNCTION(BlueprintCallable)
         bool EquipItem(int index, bool isBackpackInventory);
         UFUNCTION(BlueprintCallable)
         void UnequipItem();
+        bool UseEquippedItem();
+        UFUNCTION(BlueprintCallable)
+        int FindEquippedItem();
+        UFUNCTION(BlueprintCallable)
+        bool IsEquippedItem(int index, bool isBackpackInventory);
+        bool DrawEquippedItem() const;
+        bool SheatheEquippedItem() const;
         // Upgrades Management
         UFUNCTION(BlueprintCallable)
         bool AddUpgrade(UUpgrade* newUpgrade);

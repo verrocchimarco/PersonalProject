@@ -22,9 +22,9 @@ class INNERSANCTUM_API AInteractableBase : public AActor, public IInteractInterf
 		UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Interaction Params|Emissive Material")
 		int EmissiveMaterialIndex = 0;
 		UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Interaction Params|Emissive Material")
-		float EmissiveMaterialMaxStrength = 5.f;
+		float EmissiveMaterialMaxStrength = .4f;
 		UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Interaction Params|Emissive Material")
-		float EmissiveMaterialDeltaTime = 1.f;
+		float EmissiveMaterialDeltaTime = .2f;
 		
 		UPROPERTY(EditAnywhere,BlueprintReadOnly, Category ="Interaction Params")
 		FText PromptDescription;

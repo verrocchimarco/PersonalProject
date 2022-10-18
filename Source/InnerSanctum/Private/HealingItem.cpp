@@ -2,6 +2,8 @@
 
 
 #include "HealingItem.h"
+#include "HealthComponent.h"
+#include "ProtagonistCharacter.h"
 
 AHealingItem::AHealingItem()
 {
@@ -14,7 +16,6 @@ void AHealingItem::BeginPlay()
 }
 bool AHealingItem::UseItem()
 {
-    Super::UseItem();
-    UE_LOG(LogTemp, Display, TEXT("I'm a healing item"));
-    return true;
+    UHealthComponent* healthComponent = playerCharacter->GetHealthComponent();
+    return (healthComponent && healthComponent->HealHealth(fHealingAmount));
 }

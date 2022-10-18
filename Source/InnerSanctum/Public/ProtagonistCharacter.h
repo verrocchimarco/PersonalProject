@@ -51,12 +51,19 @@ class INNERSANCTUM_API AProtagonistCharacter : public ACharacter
 		float InteractableSphereDelay = .5f;
 		UPROPERTY(EditAnywhere, Category = "Interactions")
 		float InteractableLineDelay = .09f;
-
 		FText InteractableDescription;
 		FTimerHandle tInteractableSphereCheckTimer,tInteractableLineCheckTimer;
 		UPROPERTY()
 		AActor* FocusedActor;
 		FCollisionQueryParams CharacterIgnoreParam;	
+		// Equipped Item usage
+		bool bIsReadyToUseEquip = false;
+		bool bIsEquipDrawn = false;
+		UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta=(AllowPrivateAccess="true",DisplayName="Item attachment socket"))
+		FString sRightArmSocket;
+		UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta=(AllowPrivateAccess="true",DisplayName="Flashlight attachment socket"))
+		FString sLeftArmSocket;
+
 	protected:
 		// Called when the game starts or when spawned
 		virtual void BeginPlay() override;
@@ -76,15 +83,23 @@ class INNERSANCTUM_API AProtagonistCharacter : public ACharacter
 		USpringArmComponent* GetSpringArm() const { return uSpringArm; };
 		UFUNCTION(BlueprintCallable, BlueprintPure)
 		UWidgetComponent* GetInteractPrompt() const { return wInteractPrompt; };
-		
+		UHealthComponent* GetHealthComponent() const { return uHealthComponent; };
 		// Movement
 		void StartSprint();
 		void StopSprint();
 		void ToggleCrouch();
-
 		// Interaction
 		UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 		void UpdateInteractionWidget(AActor* InteractableActor, FVector TraceImpactPoint);
 		void CallInteraction();
 		void CallMoveInteraction();
+		// Equipped Item usage
+		void SetIsEquipReady(bool newReady);
+		void ToggleDrawEquippedItem();
+		UFUNCTION(BlueprintCallable, BlueprintPure)
+		FString GetItemBoneSocket() const { return sRightArmSocket; }
+		UFUNCTION(BlueprintCallable, BlueprintPure)
+		FString GetSecondaryItemBoneSocket() const { return sLeftArmSocket; }
+		UFUNCTION(BlueprintCallable)
+		void UseEquippedItem();
 };

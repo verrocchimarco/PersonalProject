@@ -26,17 +26,18 @@ void AProtagonistController::BeginPlay()
         UE_LOG(LogTemp, Error, TEXT("PlayerCamera component not set!"));
         UKismetSystemLibrary::QuitGame(GetWorld(),this,EQuitPreference::Quit,true);
     }
-    WidgetInventory = Cast<UPlayerMenuWidget>(CreateWidget(this, WidgetInventoryClass,TEXT("Inventory Menu")));
-    if(!WidgetInventory)
+    WidgetPlayerMenu = Cast<UPlayerMenuWidget>(CreateWidget(this, WidgetPlayerMenuClass,TEXT("Inventory Menu")));
+    if(!WidgetPlayerMenu)
         UE_LOG(LogTemp, Error, TEXT("WidgetClass component not set!"));
-    WidgetInventory->SetVisibility(ESlateVisibility::Collapsed);
-	WidgetInventory->AddToViewport();
+    WidgetPlayerMenu->SetVisibility(ESlateVisibility::Collapsed);
+	WidgetPlayerMenu->AddToViewport();
+    fDefaultFOV = PlayerCameraManager->DefaultFOV;
 }
 void AProtagonistController::Tick(float DeltaSeconds)
 {
     Super::Tick(DeltaSeconds);
     float playerSpeed = aControlledCharacter->GetVelocity().Length();
-    if( playerSpeed > fMinimumVelocityForRotation)
+    if( playerSpeed > fMinimumVelocityForRotation || bIsAiming)
         CameraRotationInterp(DeltaSeconds, playerSpeed);
 }
 
@@ -48,6 +49,9 @@ void AProtagonistController::SetupInputComponent()
     InputComponent->BindAxis(TEXT("LookUp"),        this,   &AProtagonistController::LookUp);
     InputComponent->BindAxis(TEXT("LookRight"),     this,   &AProtagonistController::LookRight);
     InputComponent->BindAction(TEXT("Inventory"), EInputEvent::IE_Pressed, this, &AProtagonistController::ToggleInventory);
+    // InputComponent->BindAction(TEXT("ToggleDraw"), EInputEvent::IE_Pressed, this, &AProtagonistController::ToggleDraw);
+    InputComponent->BindAction(TEXT("ReadyUpItem"), EInputEvent::IE_Pressed, this, &AProtagonistController::Aim);
+    InputComponent->BindAction(TEXT("ReadyUpItem"), EInputEvent::IE_Released, this, &AProtagonistController::StopAim);
 }
 
 void AProtagonistController::MoveForward(float axisValue)
@@ -80,22 +84,35 @@ void AProtagonistController::CameraRotationInterp(const float& DeltaSeconds, flo
     playerStepRotation = FMath::RInterpConstantTo(playerRotation, playerDesiredRotation, DeltaSeconds, fCameraBasedRotationSpeed + playerSpeed*0.4f);
     aControlledCharacter->SetActorRotation(playerStepRotation);
 }
+void AProtagonistController::Aim()
+{
+    bIsAiming = true;
+    aControlledCharacter->SetIsEquipReady(true);
+    PlayerCameraManager->SetFOV(fAimFOV);
+}
+void AProtagonistController::StopAim()
+{
+    bIsAiming = false;
+    aControlledCharacter->SetIsEquipReady(false);
+    PlayerCameraManager->UnlockFOV();
+    
+}
+
 void AProtagonistController::ToggleInventory()
 {
     if(!bIsInventoryOpen)
     {
         bIsInventoryOpen = true;
-        FInputModeGameAndUI fInputMode;
-        fInputMode.SetHideCursorDuringCapture(true);
-        fInputMode.SetWidgetToFocus(WidgetInventory->TakeWidget());
+        FInputModeUIOnly fInputMode;
+        fInputMode.SetWidgetToFocus(WidgetPlayerMenu->TakeWidget());
         Cast<UCharacterMovementComponent>(aControlledCharacter->GetMovementComponent())->DisableMovement();
-        SetIgnoreLookInput(true);
-        aControlledCharacter->DisableInput(this);
+        // SetIgnoreLookInput(true);
+        // aControlledCharacter->DisableInput(this);
         bShowMouseCursor=true;
         bEnableClickEvents=true;
         bEnableMouseOverEvents=true;
-        WidgetInventory->RequestInventoryUpdate();
-        WidgetInventory->SetVisibility(ESlateVisibility::Visible);
+        WidgetPlayerMenu->RequestInventoryUpdate();
+        WidgetPlayerMenu->SetVisibility(ESlateVisibility::Visible);
         SetInputMode(fInputMode);
     }
     else
@@ -103,12 +120,36 @@ void AProtagonistController::ToggleInventory()
         bIsInventoryOpen = false;
         FInputModeGameOnly fInputMode;
         Cast<UCharacterMovementComponent>(aControlledCharacter->GetMovementComponent())->SetMovementMode(EMovementMode::MOVE_Walking);
-        ResetIgnoreLookInput();
+        // ResetIgnoreLookInput();
         bShowMouseCursor=false;
         bEnableClickEvents=false;
         bEnableMouseOverEvents=false;
-        WidgetInventory->SetVisibility(ESlateVisibility::Collapsed);
+        WidgetPlayerMenu->SetVisibility(ESlateVisibility::Collapsed);
         aControlledCharacter->EnableInput(this);
         SetInputMode(fInputMode);
     }
 }
+
+
+
+/*
+A better camera manger
+
+void AMyPlayerCameraManager::UpdateCamera(float DeltaTime)
+{
+	class AMyCharacter * Character = PCOwner ? Cast<AMyCharacter>(PCOwner->GetPawn()) : NULL;
+
+	if (Character != NULL)
+	{
+		bool IsAiming = Character->IsAiming();
+
+		const float TargetFOV = IsAiming ? 60.0f : 90.0f;
+
+		DefaultFOV = FMath::FInterpTo(DefaultFOV, TargetFOV, DeltaTime, 20.0f);
+	}
+
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, FString::Printf(TEXT("%f"), DefaultFOV));
+
+	Super::UpdateCamera(DeltaTime);
+}
+*/

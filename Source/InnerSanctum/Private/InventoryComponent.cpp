@@ -14,7 +14,6 @@ UInventoryComponent::UInventoryComponent()
 	bHasBackpack = true;
 	fAvailablePocketsSpace = PocketsInventorySize;
 	fAvailableBackpackSpace = BackpackInventorySize;
-	// ...
 }
 
 
@@ -97,10 +96,13 @@ AUsableObjects* UInventoryComponent::GetItemRefAtIndex(int index, bool isBackpac
 bool UInventoryComponent::UseItemAtIndex(int index, bool isBackpackInventory)
 {
 	bool usageSuccessful = false;
+	AUsableObjects* usedObject = nullptr;
 	if(!isBackpackInventory && TPocketsHeldItems.IsValidIndex(index))
 	{
+		// If usage is successful, eliminate object
 		if(TPocketsHeldItems[index]->UseItem())
 		{
+			usedObject = TPocketsHeldItems[index];
 			fAvailablePocketsSpace += TPocketsHeldItems[index]->GetInventoryDetails().iSlotSize;
 			TPocketsHeldItems.RemoveAtSwap(index);
 			usageSuccessful = true;
@@ -111,21 +113,34 @@ bool UInventoryComponent::UseItemAtIndex(int index, bool isBackpackInventory)
 	{
 		if(TBackpackHeldItems[index]->UseItem())
 		{
+			usedObject = TBackpackHeldItems[index];
 			fAvailableBackpackSpace += TBackpackHeldItems[index]->GetInventoryDetails().iSlotSize;
 			TBackpackHeldItems.RemoveAtSwap(index);
 			usageSuccessful = true;
+			UE_LOG(LogTemp, Display, TEXT("Removing Item at %d, available backpack space %d"),index,fAvailableBackpackSpace);
 		}
+	}
+	if(usageSuccessful)
+	{
+		// Unequip
+		if(usedObject && EquippedItem == usedObject)
+		{
+			UnequipItem();
+		}
+		usedObject->Destroy();
 	}
 	return usageSuccessful;
 }
 
 
-bool UInventoryComponent::RemoveItemAtIndex(int index, bool isBackpackInventory)
+bool UInventoryComponent::RemoveItemAtIndex(int index, bool isBackpackInventory, bool shouldSpawnPickup)
 {
 	bool removalSuccessful = false;
 	AUsableObjects* ObjectReference = nullptr;
+	UE_LOG(LogTemp, Display, TEXT("Remove index: %d"),index);
 	if(!isBackpackInventory && TPocketsHeldItems.IsValidIndex(index))
 	{
+		UE_LOG(LogTemp, Display, TEXT("Item in pockets removal"));
 		fAvailablePocketsSpace += TPocketsHeldItems[index]->GetInventoryDetails().iSlotSize;
 		removalSuccessful = true;
 		ObjectReference = TPocketsHeldItems[index];
@@ -133,22 +148,32 @@ bool UInventoryComponent::RemoveItemAtIndex(int index, bool isBackpackInventory)
 	}
 	else if(isBackpackInventory && bHasBackpack && TBackpackHeldItems.IsValidIndex(index))
 	{
-		
+		UE_LOG(LogTemp, Display, TEXT("Item in backpack removal"));
 		fAvailableBackpackSpace += TBackpackHeldItems[index]->GetInventoryDetails().iSlotSize;
 		removalSuccessful = true;
 		ObjectReference = TBackpackHeldItems[index];
 		TBackpackHeldItems.RemoveAtSwap(index);
 	}
-	if (EquippedItem == ObjectReference)
+	else
 	{
-		UnequipItem();
+		return removalSuccessful;
 	}
 	if(ObjectReference)
 	{
-		FVector spawningLocation = GetOwner()->GetActorLocation();
-		FActorSpawnParameters spawnParameters;
-		spawningLocation.X += 25;
-		GetWorld()->SpawnActor(ObjectReference->GetPickupClassReference(),&spawningLocation,0);
+		// If the removed item is also the equipped one, unequip it
+		if (EquippedItem == ObjectReference)
+		{
+			UE_LOG(LogTemp, Display, TEXT("Unequipping item"));
+			UnequipItem();
+		}
+		if(shouldSpawnPickup)
+		{
+			// Spawn PickupActor
+			FVector spawningLocation = GetOwner()->GetActorLocation();
+			FActorSpawnParameters spawnParameters;
+			spawningLocation.X += 25;
+			GetWorld()->SpawnActor(ObjectReference->GetPickupClassReference(),&spawningLocation,0);
+		}
 		ObjectReference->Destroy();
 	}
 	return removalSuccessful;
@@ -293,24 +318,96 @@ bool UInventoryComponent::SwitchInventoryItems(int firstItemIndex, bool isFirstI
 bool UInventoryComponent::EquipItem(int index, bool isBackpackInventory)
 {
 	bool equipSuccessful = false;
+	AUsableObjects* newEquippedItem = nullptr;
 	if(!isBackpackInventory && TPocketsHeldItems.IsValidIndex(index))
 	{
-		EquippedItem = TPocketsHeldItems[index];
+		newEquippedItem = TPocketsHeldItems[index];
 		equipSuccessful = true;
 	}
 	else if(isBackpackInventory && bHasBackpack && TBackpackHeldItems.IsValidIndex(index))
 	{
-		EquippedItem = TBackpackHeldItems[index];
+		newEquippedItem = TBackpackHeldItems[index];
 		equipSuccessful = true;
 	}
-	return equipSuccessful = true;;
+	// If previously equipped item was being used, play switch animation
+	if(equipSuccessful && newEquippedItem && EquippedItem && EquippedItem->IsActive())
+	{
+		EquippedItem->DisableItem();
+		EquippedItem = newEquippedItem;
+		EquippedItem->ActivateItem();
+	}
+	else
+	{
+		EquippedItem = newEquippedItem;
+	}
+	return equipSuccessful;
 }
 
 void UInventoryComponent::UnequipItem()
 {
+	if(EquippedItem && EquippedItem->IsActive())
+	{
+		EquippedItem->DisableItem();
+	}
 	EquippedItem = nullptr;
 }
 
+bool UInventoryComponent::UseEquippedItem()
+{
+	bool hasItemExpired = false;
+	if(EquippedItem)
+	{
+		hasItemExpired = EquippedItem->UseItem();
+		// If the item has been used and "destroyed", remove it from the world along with its references in inventory
+		if(hasItemExpired)
+		{
+			UE_LOG(LogTemp, Display, TEXT("Item has expired"));
+			if(TBackpackHeldItems.Contains(EquippedItem))
+			{
+				UE_LOG(LogTemp, Display, TEXT("Item in backpack"));
+				RemoveItemAtIndex(TBackpackHeldItems.Find(EquippedItem),true,false);
+			}
+			else
+			{
+				UE_LOG(LogTemp, Display, TEXT("Item in pockets"));
+				RemoveItemAtIndex(TPocketsHeldItems.Find(EquippedItem),false,false);
+			}
+		}
+	}
+	return hasItemExpired;
+}
+
+int UInventoryComponent::FindEquippedItem()
+{
+	if(EquippedItem)
+	{
+		int index = -1;
+		index = TPocketsHeldItems.Find(EquippedItem);
+		if(index == INDEX_NONE)
+		{
+			index = TBackpackHeldItems.Find(EquippedItem);
+		}
+		return (index == INDEX_NONE) ? -1 : index;
+	}
+	else
+	{
+		return -1;
+	}
+}
+bool UInventoryComponent::IsEquippedItem(int index, bool isBackpackInventory)
+{
+	TArray<AUsableObjects*> targetInventory;
+	targetInventory = (isBackpackInventory) ? TBackpackHeldItems : TPocketsHeldItems;
+	return (targetInventory.IsValidIndex(index) && EquippedItem && targetInventory[index] == EquippedItem);
+}
+bool UInventoryComponent::DrawEquippedItem() const
+{
+	return EquippedItem && EquippedItem->ActivateItem();
+}
+bool UInventoryComponent::SheatheEquippedItem() const
+{
+	return EquippedItem && EquippedItem->DisableItem();
+}
 bool UInventoryComponent::AddUpgrade(UUpgrade* newUpgrade)
 {
 	if(!newUpgrade)

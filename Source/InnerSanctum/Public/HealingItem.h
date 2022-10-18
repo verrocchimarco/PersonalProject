@@ -9,7 +9,7 @@
 /**
  * 
  */
-UCLASS()
+UCLASS(Blueprintable)
 class INNERSANCTUM_API AHealingItem : public AUsableObjects
 {
 	GENERATED_BODY()

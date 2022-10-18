@@ -53,6 +53,13 @@ class INNERSANCTUM_API UHealthComponent : public UActorComponent
 		float GetMaxHealth() const { return fMaxHealth; }
 		UFUNCTION(BlueprintCallable, BlueprintPure)
 		float GetCurrentHealth() const { return fCurrentHealth; }
+		UFUNCTION(BlueprintCallable)
+		bool HealHealth(float healingAmount);
+
 		UFUNCTION()
 		void OnTakePointDamage(AActor* DamagedActor, float Damage, class AController* InstigatedBy, FVector HitLocation, UPrimitiveComponent* FHitComponent, FName BoneName, FVector ShotFromDirection, const class UDamageType* DamageType, AActor* DamageCauser );
+
+		// DEBUG
+		UFUNCTION(BlueprintCallable)
+		void UpdateHealth(float healingAmount);
 };

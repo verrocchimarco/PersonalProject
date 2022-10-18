@@ -40,6 +40,9 @@ AProtagonistCharacter::AProtagonistCharacter()
     uSpringArm->bUsePawnControlRotation = true;
     uCamera->bUsePawnControlRotation = true;
     uSpringArm->bEnableCameraLag = true;
+
+    sRightArmSocket = nullptr;
+    sLeftArmSocket = nullptr;
 }
 void AProtagonistCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
@@ -50,6 +53,8 @@ void AProtagonistCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInp
     PlayerInputComponent->BindAction("Crouching", EInputEvent::IE_Released, this, &AProtagonistCharacter::ToggleCrouch);
     PlayerInputComponent->BindAction("Interact", EInputEvent::IE_Pressed, this, &AProtagonistCharacter::CallInteraction);
     PlayerInputComponent->BindAction("VaultHide", EInputEvent::IE_Pressed, this, &AProtagonistCharacter::CallMoveInteraction);
+    PlayerInputComponent->BindAction("ToggleDraw", EInputEvent::IE_Pressed, this, &AProtagonistCharacter::ToggleDrawEquippedItem);
+    PlayerInputComponent->BindAction("UseItem", EInputEvent::IE_Pressed, this, &AProtagonistCharacter::UseEquippedItem);
 }
 
 void AProtagonistCharacter::BeginPlay()
@@ -149,7 +154,10 @@ void AProtagonistCharacter::StartSprint()
     UE_LOG(LogTemp, Display, TEXT("Start Sprint"));
     if(GetCharacterMovement()->IsCrouching())
         UnCrouch();
-    GetCharacterMovement()->MaxWalkSpeed = MaxRunSpeed;
+    if(!bIsReadyToUseEquip)
+    {
+        GetCharacterMovement()->MaxWalkSpeed = MaxRunSpeed;
+    }
 }
 
 void AProtagonistCharacter::StopSprint()
@@ -191,4 +199,43 @@ void AProtagonistCharacter::CallMoveInteraction()
             IInteractInterface::Execute_DoInteract(FocusedActor,this);
         }
     }
+}
+
+void AProtagonistCharacter::SetIsEquipReady(bool newReady)
+{
+    bIsReadyToUseEquip = newReady;
+    if(bIsReadyToUseEquip)
+    {
+        UE_LOG(LogTemp, Display, TEXT("Aiming with equipped item"));
+        StopSprint();
+    }
+    else
+    {
+        UE_LOG(LogTemp, Display, TEXT("Not aiming with equipped item"));
+    }
+}
+
+// 
+void AProtagonistCharacter::ToggleDrawEquippedItem()
+{
+    if (!bIsEquipDrawn)
+    {
+        bIsEquipDrawn = uInventoryComponent->DrawEquippedItem();
+        UE_LOG(LogTemp, Display, TEXT("You don't have the item drawn. Item ready bro? %d"), bIsEquipDrawn);
+    }
+    else 
+    {
+        bIsEquipDrawn = !(uInventoryComponent->SheatheEquippedItem());
+        UE_LOG(LogTemp, Display, TEXT("You have the item drawn. Item sheathed bro? %d"), bIsEquipDrawn);
+    }
+}
+
+// Use equipped item if the item is drawn and ready to be used. If the item usage has expired, bIsEquipDrawn will be set to false
+void AProtagonistCharacter::UseEquippedItem()
+{
+    if(bIsEquipDrawn && bIsReadyToUseEquip)
+    {
+        bIsEquipDrawn = !(uInventoryComponent->UseEquippedItem());
+    }
+    UE_LOG(LogTemp, Display, TEXT("Final usage result: %d"),bIsEquipDrawn);
 }

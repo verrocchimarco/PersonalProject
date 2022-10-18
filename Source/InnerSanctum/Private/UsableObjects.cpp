@@ -2,6 +2,8 @@
 
 
 #include "UsableObjects.h"
+#include "Kismet/GameplayStatics.h"
+#include "ProtagonistCharacter.h"
 
 // Sets default values
 AUsableObjects::AUsableObjects()
@@ -16,7 +18,9 @@ AUsableObjects::AUsableObjects()
 void AUsableObjects::BeginPlay()
 {
 	Super::BeginPlay();
-	
+	playerCharacter = Cast<AProtagonistCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(),0));
+	AttachmentSocket = playerCharacter->GetItemBoneSocket();
+	CharacterMesh = playerCharacter->GetMesh();
 }
 
 // Called every frame
@@ -26,8 +30,19 @@ void AUsableObjects::Tick(float DeltaTime)
 
 }
 
-bool AUsableObjects::UseItem()
+bool AUsableObjects::ActivateItem()
 {
-	UE_LOG(LogTemp, Display, TEXT("You used me, I'm %s"),*(GetName()));
+	FAttachmentTransformRules transformRules(EAttachmentRule::SnapToTarget,true);
+	AttachToComponent(CharacterMesh,transformRules,FName(*AttachmentSocket));
+	SetActorHiddenInGame(false);
+	SetActorEnableCollision(true);
+	bIsActive = true;
+	return true;
+}
+bool AUsableObjects::DisableItem()
+{
+	SetActorHiddenInGame(true);
+	SetActorEnableCollision(false);
+	bIsActive = false;
 	return true;
 }

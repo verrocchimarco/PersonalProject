@@ -7,6 +7,7 @@
 #include "InteractableBase.h"
 #include "UsableObjects.generated.h"
 
+class AProtagonistCharacter;
 UENUM(BlueprintType)
 enum ItemCategory
 {
@@ -34,6 +35,13 @@ struct FInventoryItem
     TEnumAsByte<ItemCategory> sItemType;
     UPROPERTY(EditAnywhere, BlueprintReadWrite, Category="Size", meta=(DisplayName="Occupied Slots"))
     int iSlotSize;
+
+    FInventoryItem()
+    {
+        texItemPicture = nullptr;
+        sItemType = ItemCategory::GenericItem;
+        iSlotSize = 0;
+    }
 };
  
 UCLASS(Abstract, BlueprintType,Blueprintable)
@@ -51,6 +59,11 @@ class INNERSANCTUM_API AUsableObjects : public AActor
 		TSubclassOf<AInteractableBase> aPickupClass;
         UPROPERTY(EditAnywhere, BlueprintReadWrite)
         USkeletalMeshComponent* ObjectMesh;
+        UPROPERTY(VisibleAnywhere)
+        FString AttachmentSocket;
+        USkeletalMeshComponent* CharacterMesh;
+        AProtagonistCharacter* playerCharacter;
+        bool bIsActive = false;
 		// Called when the game starts or when spawned
 		virtual void BeginPlay() override;
 
@@ -62,6 +75,8 @@ class INNERSANCTUM_API AUsableObjects : public AActor
 		FInventoryItem GetInventoryDetails() const { return sInventoryDetails; }
         UFUNCTION(BlueprintCallable)
         TSubclassOf<AInteractableBase> GetPickupClassReference() const { return aPickupClass; }
-        virtual bool UseItem();
-
+        virtual bool UseItem() {return true;};
+        bool ActivateItem();
+        bool DisableItem();
+        bool IsActive()const{ return bIsActive; }
 };

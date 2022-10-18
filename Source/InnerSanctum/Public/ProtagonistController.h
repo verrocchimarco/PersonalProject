@@ -21,20 +21,33 @@ class INNERSANCTUM_API AProtagonistController : public APlayerController
 		UPROPERTY()
 		AProtagonistCharacter* aControlledCharacter;
 		UCameraComponent*	 uPlayerCamera;
-		// Camera based rotation
+		// Camera
+			// Rotation
+		UPROPERTY(EditAnywhere, Category="Camera Custom", meta=(DisplayName="Minimum Speed for Rotation"))
 		float fMinimumVelocityForRotation = 2.f;
-		UPROPERTY(EditAnywhere, meta=(DisplayName="Camera Based Character Rotation"))
+		UPROPERTY(EditAnywhere, Category="Camera Custom",meta=(DisplayName="Camera Based Character Rotation Speed"))
 		float fCameraBasedRotationSpeed = 300.f;
-		// Camera sensitivity
-		UPROPERTY(EditAnywhere, meta=(DisplayName="Horizontal Sensitivity"))
+		void CameraRotationInterp(const float& DeltaSeconds, float& playerSpeed);
+			// Sensitivity
+		UPROPERTY(EditAnywhere, Category="Camera Custom", meta=(DisplayName="Horizontal Sensitivity"))
 		float fHorizontalSensitivity = 50.f;
-		UPROPERTY(EditAnywhere, meta=(DisplayName="Vertical Sensitivity"))
+		UPROPERTY(EditAnywhere, Category="Camera Custom", meta=(DisplayName="Vertical Sensitivity"))
 		float fVerticalSensitivity = 30.f;
+			// Aiming
+		UPROPERTY(EditAnywhere, Category="Camera Custom", meta=(DisplayName="Aiming FOV"))
+		float fAimFOV = 65.f;
+		float fDefaultFOV;
+		bool bIsAiming = false;
+		FTimerHandle tFOVInterpTimer;
+		float fAimInterpDelay = 0.1f;
+		float fAimInterpProgress = 0.1f;
+		// UFUNCTION()
+		// void FOVInterpolation();
 		// Inventory
-		UPROPERTY(EditAnywhere)
-		TSubclassOf<UUserWidget> WidgetInventoryClass;
-		UPROPERTY(BlueprintReadWrite, meta=(AllowPrivateAccess="true"))
-		UPlayerMenuWidget* WidgetInventory;
+		UPROPERTY(EditAnywhere, Category="Player Menu")
+		TSubclassOf<UUserWidget> WidgetPlayerMenuClass;
+		UPROPERTY(BlueprintReadWrite, Category="Player Menu", meta=(AllowPrivateAccess="true"))
+		UPlayerMenuWidget* WidgetPlayerMenu;
 		bool bIsInventoryOpen = false;
 	protected:
 		virtual void BeginPlay() override;
@@ -47,9 +60,10 @@ class INNERSANCTUM_API AProtagonistController : public APlayerController
 		// Camera
 		void LookUp(float axisValue);
 		void LookRight(float axisValue);
-		// Camera based rotation
-		void CameraRotationInterp(const float& DeltaSeconds, float& playerSpeed);
+		void Aim();
+		void StopAim();
 		virtual void SetupInputComponent() override;
 		// Inventory HUD
+		UFUNCTION(BlueprintCallable)
 		void ToggleInventory();
 };
