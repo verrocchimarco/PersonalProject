@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Character.h"
+#include "BaseCharacter.h"
 #include "ProtagonistCharacter.generated.h"
 
 class UCameraComponent;
@@ -17,13 +18,13 @@ class UInventoryComponent;
 class USkeletalMeshComponent;
 class USkeletalMesh;
 UCLASS()
-class INNERSANCTUM_API AProtagonistCharacter : public ACharacter
+class INNERSANCTUM_API AProtagonistCharacter : public ABaseCharacter
 {
 	GENERATED_BODY()
 	public:	
 		// Sets default values for this character's properties
 		AProtagonistCharacter();
-	private:
+	protected:
 		// Actor Components
 		UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Components", meta=(DisplayName="Camera Boom",AllowPrivateAccess="true"))
 		USpringArmComponent* uSpringArm;
@@ -31,19 +32,10 @@ class INNERSANCTUM_API AProtagonistCharacter : public ACharacter
 		UCameraComponent* 	 uCamera;
 		UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Components", meta=(DisplayName="Interact Prompt",AllowPrivateAccess="true"))
 		UWidgetComponent* wInteractPrompt;
-		UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Components",meta=(DisplayName="Health Component",AllowPrivateAccess="true"))
-		UHealthComponent* uHealthComponent;
 		UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Components",meta=(DisplayName="Inventory Component",AllowPrivateAccess="true"))
 		UInventoryComponent* uInventoryComponent;
 		UPROPERTY(EditDefaultsOnly)
 		UStaticMeshComponent* uBackpackMesh;
-		// Movement speed params
-		UPROPERTY(EditAnywhere, Category = "Movement", meta=(DisplayName="Walking Speed"))
-		float MaxWalkSpeed = 220.f;
-		UPROPERTY(EditAnywhere, Category = "Movement", meta=(DisplayName="Sprinting Speed"))
-		float MaxRunSpeed = 400.f;
-		UPROPERTY(EditAnywhere, Category = "Movement", meta=(DisplayName="Crouch Speed"))
-		float MaxCrouchSpeed = 100.f;
 		// Interaction with InteractInterface actors
 		UPROPERTY(EditAnywhere, Category = "Interactions")
 		float InteractableFocusReach = 300.f;
@@ -87,8 +79,6 @@ class INNERSANCTUM_API AProtagonistCharacter : public ACharacter
 		UFUNCTION(BlueprintCallable, BlueprintPure)
 		UWidgetComponent* GetInteractPrompt() const { return wInteractPrompt; };
 		UFUNCTION(BlueprintCallable, BlueprintPure)
-		UHealthComponent* GetHealthComponent() const { return uHealthComponent; };
-		UFUNCTION(BlueprintCallable, BlueprintPure)
 		UInventoryComponent* GetInventoryComponent() const { return uInventoryComponent; };
 		UFUNCTION(BlueprintCallable, BlueprintPure)
 		FString GetItemBoneSocket() const { return sRightArmSocket; }
@@ -96,9 +86,9 @@ class INNERSANCTUM_API AProtagonistCharacter : public ACharacter
 		FString GetSecondaryItemBoneSocket() const { return sLeftArmSocket; }
 		UStaticMeshComponent* GetBackpackMesh() const { return uBackpackMesh; }
 		// Movement
-		void StartSprint();
-		void StopSprint();
-		void ToggleCrouch();
+		virtual void StartSprint() override;
+		virtual void StopSprint() override;
+		virtual void ToggleCrouch() override;
 		
 		// Interaction
 		UFUNCTION(BlueprintNativeEvent, BlueprintCallable)

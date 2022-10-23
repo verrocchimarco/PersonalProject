@@ -6,12 +6,12 @@
 #include "Components/ActorComponent.h"
 #include "HealthComponent.generated.h"
 
-class AProtagonistCharacter;
+class ABaseCharacter;
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class INNERSANCTUM_API UHealthComponent : public UActorComponent
 {
 	GENERATED_BODY()
-	DECLARE_DYNAMIC_MULTICAST_DELEGATE(FDeathDelegate);
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FDeathDelegate,ABaseCharacter*,deadCharacter);
 	private:
 		UPROPERTY(EditAnywhere, Category="Health", meta=(DisplayName="Max Health"))
 		float fMaxHealth = 100.f;
@@ -37,7 +37,7 @@ class INNERSANCTUM_API UHealthComponent : public UActorComponent
 		UPROPERTY(EditAnywhere, Category="Dismemberment Survival", meta=(DisplayName="Can Survive Lower Limbs Dismemberment"))
 		bool bNoDownLimbsSurvive = false;
 
-		AProtagonistCharacter* OwnerCharacter;
+		ABaseCharacter* OwnerCharacter;
 		// Sets default values for this component's properties
 		UHealthComponent();
 

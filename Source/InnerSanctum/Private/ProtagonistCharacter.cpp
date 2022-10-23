@@ -17,13 +17,10 @@
 
 // Initialization and construction
 AProtagonistCharacter::AProtagonistCharacter()
-{
-    PrimaryActorTick.bCanEverTick 	= true;
-    
+{    
     uSpringArm           = CreateDefaultSubobject<USpringArmComponent>(TEXT("Camera SpringArm"));
     uCamera              = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera"));
     wInteractPrompt      = CreateDefaultSubobject<UWidgetComponent>(TEXT("Interact Prompt"));
-    uHealthComponent     = CreateDefaultSubobject<UHealthComponent>(TEXT("Health Component"));
     uInventoryComponent  = CreateDefaultSubobject<UInventoryComponent>(TEXT("Inventory Component"));
     uBackpackMesh        = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Backpack Mesh"));
 
@@ -50,10 +47,6 @@ AProtagonistCharacter::AProtagonistCharacter()
 void AProtagonistCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
     Super::SetupPlayerInputComponent(PlayerInputComponent);
-    UE_LOG(LogTemp, Display, TEXT("Setup Player Input"));
-    PlayerInputComponent->BindAction("Sprint", EInputEvent::IE_Pressed, this, &AProtagonistCharacter::StartSprint);
-    PlayerInputComponent->BindAction("Sprint", EInputEvent::IE_Released, this, &AProtagonistCharacter::StopSprint);
-    PlayerInputComponent->BindAction("Crouching", EInputEvent::IE_Released, this, &AProtagonistCharacter::ToggleCrouch);
     PlayerInputComponent->BindAction("Interact", EInputEvent::IE_Pressed, this, &AProtagonistCharacter::CallInteraction);
     PlayerInputComponent->BindAction("VaultHide", EInputEvent::IE_Pressed, this, &AProtagonistCharacter::CallMoveInteraction);
     PlayerInputComponent->BindAction("ToggleDraw", EInputEvent::IE_Pressed, this, &AProtagonistCharacter::ToggleDrawEquippedItem);
@@ -63,9 +56,6 @@ void AProtagonistCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInp
 void AProtagonistCharacter::BeginPlay()
 {
     Super::BeginPlay();
-    // Set speed
-    GetCharacterMovement()->MaxWalkSpeed = MaxWalkSpeed;
-    GetCharacterMovement()->MaxWalkSpeedCrouched = MaxCrouchSpeed;
     // Create interaction line traces
     GetWorldTimerManager().SetTimer(tInteractableLineCheckTimer,this,&AProtagonistCharacter::CastInteractableLineTrace,InteractableLineDelay,true);
     GetWorldTimerManager().SetTimer(tInteractableSphereCheckTimer,this,&AProtagonistCharacter::CastInteractableSphereTrace,InteractableSphereDelay,true);

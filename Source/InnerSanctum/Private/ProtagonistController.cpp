@@ -98,7 +98,7 @@ void AProtagonistController::StopAim()
 
 void AProtagonistController::ToggleInventory()
 {
-    if(!bIsInventoryOpen)
+    if(!bIsInventoryOpen && !Cast<UCharacterMovementComponent>(aControlledCharacter->GetMovementComponent())->IsFalling())
     {
         bIsInventoryOpen = true;
         FInputModeUIOnly fInputMode;

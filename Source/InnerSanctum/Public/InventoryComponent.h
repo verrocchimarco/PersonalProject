@@ -43,6 +43,7 @@ class INNERSANCTUM_API UInventoryComponent : public UActorComponent
     protected:
         // Called when the game starts
         virtual void BeginPlay() override;
+        void GameInstanceInit();
 
     public:	
         // Called every frame
@@ -65,13 +66,14 @@ class INNERSANCTUM_API UInventoryComponent : public UActorComponent
         bool hasBackpack() const { return bHasBackpack; }
         UFUNCTION(BlueprintCallable, BlueprintPure)
         FInventoryItem  GetEquippedItemData() const { if(EquippedItem) return EquippedItem->GetInventoryDetails(); else return FInventoryItem() ; }
-        UFUNCTION(BlueprintCallable, BlueprintPure)
         
         // Equipped item getters
-        AUsableObjects* GetEquippedItem() { return EquippedItem; }
+        UFUNCTION(BlueprintCallable, BlueprintPure)
+        AUsableObjects* GetEquippedItem() const { return EquippedItem; }
         AUsableObjects* GetItemRefAtIndex(int index, bool isBackpackInventory);
         UFUNCTION(BlueprintCallable, BlueprintPure)
         bool IsEquippedItemDrawn() const { return bIsEquippedItemDrawn; }
+        TPair<int,bool> GetEquippedItemLocation() const { return EquippedItemLocation; }
         
         // Upgrades getters
         UFUNCTION(BlueprintCallable, BlueprintPure)

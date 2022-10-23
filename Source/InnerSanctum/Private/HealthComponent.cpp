@@ -20,7 +20,7 @@ UHealthComponent::UHealthComponent()
 void UHealthComponent::BeginPlay()
 {
 	Super::BeginPlay();
-	OwnerCharacter 				= Cast<AProtagonistCharacter>(GetOwner());
+	OwnerCharacter 				= Cast<ABaseCharacter>(GetOwner());
 	fCurrentHealth 				= fMaxHealth;
 	fHeadCurrentHealth 			= fHeadMaxHealth;
 	fUpperLimbsCurrentHealth	= fUpperLimbsMaxHealth;
@@ -41,7 +41,7 @@ void UHealthComponent::OnTakePointDamage(AActor* DamagedActor, float Damage, cla
 	UE_LOG(LogTemp, Display, TEXT("Current Health: %f"), fCurrentHealth);
 	if(!fCurrentHealth && DamagedActor && OnDeathDelegate.IsBound())
 	{
-		OnDeathDelegate.Broadcast();
+		OnDeathDelegate.Broadcast(Cast<ABaseCharacter>(DamagedActor));
 	}
 }
 

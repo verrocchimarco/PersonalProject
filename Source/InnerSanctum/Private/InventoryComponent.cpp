@@ -4,6 +4,7 @@
 #include "InventoryComponent.h"
 #include "ProtagonistCharacter.h"
 #include "Kismet/KismetArrayLibrary.h"
+#include "InnerSanctumGameInstance.h"
 // Sets default values for this component's properties
 UInventoryComponent::UInventoryComponent()
 {
@@ -21,6 +22,7 @@ UInventoryComponent::UInventoryComponent()
 void UInventoryComponent::BeginPlay()
 {
 	Super::BeginPlay();
+	GameInstanceInit();
 	CharacterBackpackMesh = Cast<AProtagonistCharacter>(GetOwner())->GetBackpackMesh();
 	if(bHasBackpack)
 	{
@@ -70,6 +72,12 @@ bool UInventoryComponent::SetBackpackInventorySize(int newSize)
 
 bool UInventoryComponent::AddItem(AUsableObjects* newItem)
 {
+	if(!newItem)
+	{
+		UE_LOG(LogTemp, Display, TEXT("Inventory: Item added does not exist"));
+		return false;
+	}
+	newItem->SetActorHiddenInGame(true);
 	int itemSlotSize = newItem->GetInventoryDetails().iSlotSize;
 	if( fAvailablePocketsSpace - itemSlotSize >= 0 )
 	{
@@ -459,4 +467,45 @@ void UInventoryComponent::EnableBackpack(UStaticMesh* newBackpackMesh)
 	}
 	CharacterBackpackMesh->SetVisibility(true);
 	bHasBackpack=true;
+}
+
+void UInventoryComponent::GameInstanceInit()
+{
+	UInnerSanctumGameInstance* gameInstance = Cast<UInnerSanctumGameInstance>(GetWorld()->GetGameInstance());
+	UE_LOG(LogTemp, Display, TEXT("Inventory: retrieving data from game instance"));
+	EquippedItemLocation = gameInstance->GetEquippedItemLocation(); UE_LOG(LogTemp, Display, TEXT("Equipped Item location:[%d][%d]"),EquippedItemLocation.Key,EquippedItemLocation.Value);
+	bHasBackpack = gameInstance->GetPlayerHasBackpack(); UE_LOG(LogTemp, Display, TEXT("Player backpack availability:[%d]"),bHasBackpack);
+	// for(TSubclassOf<UUpgrade> upgradeClass : gameInstance->GetPlayerUpgrades())
+	// {
+	// 	UUpgrade* newUpgrade = GetWorld()->SpawnActor(upgradeClass);
+	// 	bool success = newUpgrade->EnableUpgrade();
+	// 	TUpgrades.Emplace(newUpgrade);
+	// 	UE_LOG(LogTemp, Display, TEXT("Adding upgrade: [%s] | Success: [%d]"),*(newUpgrade->GetName()),success);
+	// }
+	for(TSubclassOf<AUsableObjects> itemClass : gameInstance->GetPlayerPocketsItems())
+	{
+		AUsableObjects* item = Cast<AUsableObjects>(GetWorld()->SpawnActor(itemClass));
+		bool success = AddItem(item);
+		UE_LOG(LogTemp, Display, TEXT("Adding pocket item: [%s] | Success: [%d]"),*(item->GetName()),success);	
+	}
+		
+	// }
+	// for(AUsableObjects* item : gameInstance->GetTPlayerBackpackItems())
+	// {
+	// 	bool success = AddItem(item);
+	// 	UE_LOG(LogTemp, Display, TEXT("Adding backpack item: [%s] | Success: [%d]"),*(item->GetName()),success);
+	// }
+	// Equip item if it's in an available location
+	if(EquippedItemLocation.Key != -1)
+	{
+		// If it's in the backpack but the backpack is not available, unset the equipped item location
+		if(EquippedItemLocation.Value && !bHasBackpack)
+		{
+			EquippedItemLocation = TPair<int,bool>(-1,false);
+		}
+		else
+		{
+			EquipItem(EquippedItemLocation.Key, EquippedItemLocation.Value);
+		}
+	}
 }

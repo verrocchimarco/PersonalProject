@@ -10,6 +10,7 @@
  * 
  */
 class AProtagonistCharacter;
+class ABaseCharacter;
 UCLASS()
 class INNERSANCTUM_API AInnerSanctumGameModeBase : public AGameModeBase
 {
@@ -20,5 +21,5 @@ class INNERSANCTUM_API AInnerSanctumGameModeBase : public AGameModeBase
 		virtual void BeginPlay() override;
 	public:
 		UFUNCTION()
-		void ActorKilled();
+		void ActorKilled(ABaseCharacter* deadCharacter);
 };
