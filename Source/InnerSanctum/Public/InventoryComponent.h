@@ -6,6 +6,7 @@
 #include "Components/ActorComponent.h"
 #include "UsableObjects.h"
 #include "Upgrade.h"
+#include "Templates/Tuple.h"
 #include "InventoryComponent.generated.h"
 
 
@@ -25,10 +26,14 @@ class INNERSANCTUM_API UInventoryComponent : public UActorComponent
         int BackpackInventorySize = 4;
         UPROPERTY(VisibleAnywhere, Category="Backpack")
         int fAvailableBackpackSpace;
+        UStaticMeshComponent* CharacterBackpackMesh;
+        UPROPERTY(EditAnywhere, Category="Backpack")
+        UStaticMesh* BackpackMesh;
         TArray<AUsableObjects*> TPocketsHeldItems;
         TArray<AUsableObjects*> TBackpackHeldItems;
         TArray<UUpgrade*> TUpgrades;
         AUsableObjects* EquippedItem = nullptr;
+        TPair<int,bool> EquippedItemLocation = TPair<int,bool>(-1,false);
         bool bIsEquippedItemDrawn = false;
 
     public:	
@@ -44,7 +49,6 @@ class INNERSANCTUM_API UInventoryComponent : public UActorComponent
         virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
         
         // Getters
-            // Sub inventory getters
         UFUNCTION(BlueprintCallable, BlueprintPure)
         TArray<AUsableObjects*> GetPocketsHeldItems() const{ return TPocketsHeldItems; }
         UFUNCTION(BlueprintCallable, BlueprintPure)
@@ -58,15 +62,18 @@ class INNERSANCTUM_API UInventoryComponent : public UActorComponent
         UFUNCTION(BlueprintCallable, BlueprintPure)
         int GetAvailablePocketSpace() const { return fAvailablePocketsSpace; }
         UFUNCTION(BlueprintCallable, BlueprintPure)
-        bool hasBackpack() const{ return bHasBackpack; }
+        bool hasBackpack() const { return bHasBackpack; }
         UFUNCTION(BlueprintCallable, BlueprintPure)
-            // Equipped item getters
-        FInventoryItem GetEquippedItemData() { if(EquippedItem) return EquippedItem->GetInventoryDetails(); else return FInventoryItem() ; }
+        FInventoryItem  GetEquippedItemData() const { if(EquippedItem) return EquippedItem->GetInventoryDetails(); else return FInventoryItem() ; }
+        UFUNCTION(BlueprintCallable, BlueprintPure)
+        
+        // Equipped item getters
         AUsableObjects* GetEquippedItem() { return EquippedItem; }
         AUsableObjects* GetItemRefAtIndex(int index, bool isBackpackInventory);
         UFUNCTION(BlueprintCallable, BlueprintPure)
         bool IsEquippedItemDrawn() const { return bIsEquippedItemDrawn; }
-            // Upgrades getters
+        
+        // Upgrades getters
         UFUNCTION(BlueprintCallable, BlueprintPure)
         TArray<UUpgrade*> GetUpgrades() const{ return TUpgrades; }
         UFUNCTION(BlueprintCallable, BlueprintPure)
@@ -82,9 +89,9 @@ class INNERSANCTUM_API UInventoryComponent : public UActorComponent
         UFUNCTION(BlueprintCallable)
         bool AddItem(AUsableObjects* newItem);
         UFUNCTION(BlueprintCallable)
-        bool UseItemAtIndex(int index, bool isBackpackInventory);
+        bool RemoveItem(int index, bool isBackpackInventory, bool shouldSpawnPickup=true);
         UFUNCTION(BlueprintCallable)
-        bool RemoveItemAtIndex(int index, bool isBackpackInventory, bool shouldSpawnPickup=true);
+        bool UseItemAtIndex(int index, bool isBackpackInventory);
         UFUNCTION(BlueprintCallable)
         TSubclassOf<AUsableObjects> GetItemAtIndex(int index, bool isBackpackInventory);
         UFUNCTION(BlueprintCallable)
@@ -96,9 +103,7 @@ class INNERSANCTUM_API UInventoryComponent : public UActorComponent
         UFUNCTION(BlueprintCallable)
         void UnequipItem();
         bool UseEquippedItem();
-        UFUNCTION(BlueprintCallable)
-        int FindEquippedItem();
-        UFUNCTION(BlueprintCallable)
+        UFUNCTION(BlueprintCallable, BlueprintPure)
         bool IsEquippedItem(int index, bool isBackpackInventory);
         void ToggleDrawEquippedItem();
         // Upgrades Management
@@ -106,4 +111,10 @@ class INNERSANCTUM_API UInventoryComponent : public UActorComponent
         bool AddUpgrade(UUpgrade* newUpgrade);
         UFUNCTION(BlueprintCallable)
         bool RemoveUpgrade(int index);
+
+        // Backpack availability
+        UFUNCTION(BlueprintCallable)
+        void RemoveBackpack();
+        UFUNCTION(BlueprintCallable)
+        void EnableBackpack(UStaticMesh* newBackpackMesh=nullptr);
 };

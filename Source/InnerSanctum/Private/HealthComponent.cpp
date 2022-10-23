@@ -27,7 +27,6 @@ void UHealthComponent::BeginPlay()
 	fLowerLimbsCurrentHealth	= fLowerLimbsMaxHealth;
 
 	OwnerCharacter->OnTakePointDamage.AddDynamic(this, &UHealthComponent::OnTakePointDamage);
-	UE_LOG(LogTemp, Display, TEXT("Your message"));
 }
 // Called every frame
 void UHealthComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)

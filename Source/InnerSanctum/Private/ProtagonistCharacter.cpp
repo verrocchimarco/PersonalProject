@@ -25,11 +25,14 @@ AProtagonistCharacter::AProtagonistCharacter()
     wInteractPrompt      = CreateDefaultSubobject<UWidgetComponent>(TEXT("Interact Prompt"));
     uHealthComponent     = CreateDefaultSubobject<UHealthComponent>(TEXT("Health Component"));
     uInventoryComponent  = CreateDefaultSubobject<UInventoryComponent>(TEXT("Inventory Component"));
+    uBackpackMesh        = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Backpack Mesh"));
 
     uSpringArm->SetupAttachment(GetMesh(),"clavicle_CameraSocket");
     uCamera->SetupAttachment(uSpringArm);
     wInteractPrompt->SetupAttachment(RootComponent);
-
+    uBackpackMesh->SetupAttachment(GetMesh(),"spine_BackpackSocket");
+    uBackpackMesh->SetVisibility(false);
+    
     GetCharacterMovement()->NavAgentProps.bCanCrouch = true;
     GetCharacterMovement()->NavAgentProps.bCanSwim = false;
     GetCharacterMovement()->NavAgentProps.bCanJump = false;
@@ -167,16 +170,16 @@ void AProtagonistCharacter::StopSprint()
 
 void AProtagonistCharacter::ToggleCrouch()
 {
-    UE_LOG(LogTemp, Display, TEXT("Toggling crouch"));
+    // UE_LOG(LogTemp, Display, TEXT("Toggling crouch"));
     if(GetCharacterMovement()->IsCrouching())
     {
-        UE_LOG(LogTemp, Display, TEXT("Uncrouching"));
+        // UE_LOG(LogTemp, Display, TEXT("Uncrouching"));
         UnCrouch();
     }
     else
     {
         StopSprint();
-        UE_LOG(LogTemp, Display, TEXT("Crouching"));
+        // UE_LOG(LogTemp, Display, TEXT("Crouching"));
         Crouch();
     }
 }
@@ -228,5 +231,5 @@ void AProtagonistCharacter::UseEquippedItem()
     {
         uInventoryComponent->UseEquippedItem();
     }
-    UE_LOG(LogTemp, Display, TEXT("Final usage result: %d"),bIsEquipDrawn);
+    UE_LOG(LogTemp, Display, TEXT("Is Equip still drawn: %d"),uInventoryComponent->IsEquippedItemDrawn());
 }

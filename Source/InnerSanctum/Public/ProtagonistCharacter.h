@@ -35,6 +35,8 @@ class INNERSANCTUM_API AProtagonistCharacter : public ACharacter
 		UHealthComponent* uHealthComponent;
 		UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Components",meta=(DisplayName="Inventory Component",AllowPrivateAccess="true"))
 		UInventoryComponent* uInventoryComponent;
+		UPROPERTY(EditDefaultsOnly)
+		UStaticMeshComponent* uBackpackMesh;
 		// Movement speed params
 		UPROPERTY(EditAnywhere, Category = "Movement", meta=(DisplayName="Walking Speed"))
 		float MaxWalkSpeed = 220.f;
@@ -58,10 +60,10 @@ class INNERSANCTUM_API AProtagonistCharacter : public ACharacter
 		FCollisionQueryParams CharacterIgnoreParam;	
 		// Equipped Item usage
 		bool bIsReadyToUseEquip = false;
-		bool bIsEquipDrawn = false;
-		UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta=(AllowPrivateAccess="true",DisplayName="Item attachment socket"))
+		UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Usable Items", meta=(AllowPrivateAccess="true",DisplayName="Item attachment socket"))
 		FString sRightArmSocket;
-		UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, meta=(AllowPrivateAccess="true",DisplayName="Flashlight attachment socket"))
+		// std::string const sSocketName_SpringArm = "clavicle_CameraSocket";
+		UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Usable Items", meta=(AllowPrivateAccess="true",DisplayName="Flashlight attachment socket"))
 		FString sLeftArmSocket;
 
 	protected:
@@ -76,6 +78,7 @@ class INNERSANCTUM_API AProtagonistCharacter : public ACharacter
 	public:
 		// Called every frame
 		virtual void Tick(float DeltaTime) override;
+
 		// Getters
 		UFUNCTION(BlueprintCallable, BlueprintPure)
 		UCameraComponent* GetCamera() const { return uCamera; };
@@ -85,22 +88,26 @@ class INNERSANCTUM_API AProtagonistCharacter : public ACharacter
 		UWidgetComponent* GetInteractPrompt() const { return wInteractPrompt; };
 		UFUNCTION(BlueprintCallable, BlueprintPure)
 		UHealthComponent* GetHealthComponent() const { return uHealthComponent; };
+		UFUNCTION(BlueprintCallable, BlueprintPure)
+		UInventoryComponent* GetInventoryComponent() const { return uInventoryComponent; };
+		UFUNCTION(BlueprintCallable, BlueprintPure)
+		FString GetItemBoneSocket() const { return sRightArmSocket; }
+		UFUNCTION(BlueprintCallable, BlueprintPure)
+		FString GetSecondaryItemBoneSocket() const { return sLeftArmSocket; }
+		UStaticMeshComponent* GetBackpackMesh() const { return uBackpackMesh; }
 		// Movement
 		void StartSprint();
 		void StopSprint();
 		void ToggleCrouch();
+		
 		// Interaction
 		UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 		void UpdateInteractionWidget(AActor* InteractableActor, FVector TraceImpactPoint);
 		void CallInteraction();
 		void CallMoveInteraction();
+		
 		// Equipped Item usage
 		void SetIsEquipReady(bool newReady);
 		void ToggleDrawEquippedItem();
-		UFUNCTION(BlueprintCallable, BlueprintPure)
-		FString GetItemBoneSocket() const { return sRightArmSocket; }
-		UFUNCTION(BlueprintCallable, BlueprintPure)
-		FString GetSecondaryItemBoneSocket() const { return sLeftArmSocket; }
-		UFUNCTION(BlueprintCallable)
 		void UseEquippedItem();
 };
