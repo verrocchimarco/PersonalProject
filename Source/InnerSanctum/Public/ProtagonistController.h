@@ -41,14 +41,14 @@ class INNERSANCTUM_API AProtagonistController : public APlayerController
 		FTimerHandle tFOVInterpTimer;
 		float fAimInterpDelay = 0.1f;
 		float fAimInterpProgress = 0.1f;
-		// UFUNCTION()
-		// void FOVInterpolation();
 		// Inventory
 		UPROPERTY(EditAnywhere, Category="Player Menu")
 		TSubclassOf<UUserWidget> WidgetPlayerMenuClass;
 		UPROPERTY(BlueprintReadWrite, Category="Player Menu", meta=(AllowPrivateAccess="true"))
 		UPlayerMenuWidget* WidgetPlayerMenu;
 		bool bIsInventoryOpen = false;
+		// Movement
+		bool bCanMove;
 	protected:
 		virtual void BeginPlay() override;
 		virtual void Tick(float DeltaSeconds) override;

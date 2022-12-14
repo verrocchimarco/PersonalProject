@@ -3,13 +3,18 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Components/ActorComponent.h"
 #include "UsableObjects.h"
 #include "Upgrade.generated.h"
 
-
-UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
-class INNERSANCTUM_API UUpgrade : public UActorComponent
+UENUM(BlueprintType)
+enum UpgradeType
+{
+	Backpack	UMETA(DisplayName = "Backpack"),
+	Generic     UMETA(DisplayName = "Generic"),
+};
+class AProtagonistCharacter;
+UCLASS(BlueprintType, ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
+class INNERSANCTUM_API UUpgrade : public UObject
 {
 	GENERATED_BODY()
 
@@ -20,18 +25,21 @@ public:
 protected:
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Upgrade Description", meta=(DisplayName="Inventory Details"))
 	FInventoryItem sInventoryDetails;
-	// Called when the game starts
-	virtual void BeginPlay() override;
-
+	UPROPERTY(BlueprintReadOnly)
+	AProtagonistCharacter* mainCharacter;
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category="Upgrade Description", meta=(DisplayName="Upgrade type"))
+	TEnumAsByte<UpgradeType> sUpgradeType;
 public:	
-	// Called every frame
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+	UFUNCTION(BlueprintCallable)
+	void SetMainCharacter(AProtagonistCharacter* playerRef) { mainCharacter = playerRef; }
 	UFUNCTION(BlueprintCallable,BlueprintImplementableEvent)
 	bool EnableUpgrade();
 	UFUNCTION(BlueprintCallable,BlueprintImplementableEvent)
 	bool DisableUpgrade();
 	UFUNCTION(BlueprintCallable, BlueprintPure)
 	FInventoryItem GetUpgradeInventoryDetails() const { return sInventoryDetails; }
+	UFUNCTION(BlueprintCallable, BlueprintPure)
+	UpgradeType GetUpgradeType() const { return sUpgradeType; }
 		
 };
 

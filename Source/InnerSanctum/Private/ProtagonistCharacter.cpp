@@ -47,8 +47,8 @@ AProtagonistCharacter::AProtagonistCharacter()
 void AProtagonistCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
     Super::SetupPlayerInputComponent(PlayerInputComponent);
-    PlayerInputComponent->BindAction("Interact", EInputEvent::IE_Pressed, this, &AProtagonistCharacter::CallInteraction);
-    PlayerInputComponent->BindAction("VaultHide", EInputEvent::IE_Pressed, this, &AProtagonistCharacter::CallMoveInteraction);
+    PlayerInputComponent->BindAction("InteractE", EInputEvent::IE_Pressed, this, &AProtagonistCharacter::CallInteraction);
+    PlayerInputComponent->BindAction("InteractSpace", EInputEvent::IE_Pressed, this, &AProtagonistCharacter::CallMoveInteraction);
     PlayerInputComponent->BindAction("ToggleDraw", EInputEvent::IE_Pressed, this, &AProtagonistCharacter::ToggleDrawEquippedItem);
     PlayerInputComponent->BindAction("UseItem", EInputEvent::IE_Pressed, this, &AProtagonistCharacter::UseEquippedItem);
 }
@@ -144,33 +144,9 @@ void AProtagonistCharacter::UpdateInteractionWidget_Implementation(AActor* Inter
 
 void AProtagonistCharacter::StartSprint()
 {
-    UE_LOG(LogTemp, Display, TEXT("Start Sprint"));
-    if(GetCharacterMovement()->IsCrouching())
-        UnCrouch();
     if(!bIsReadyToUseEquip)
     {
-        GetCharacterMovement()->MaxWalkSpeed = MaxRunSpeed;
-    }
-}
-
-void AProtagonistCharacter::StopSprint()
-{
-    GetCharacterMovement()->MaxWalkSpeed = MaxWalkSpeed;
-}
-
-void AProtagonistCharacter::ToggleCrouch()
-{
-    // UE_LOG(LogTemp, Display, TEXT("Toggling crouch"));
-    if(GetCharacterMovement()->IsCrouching())
-    {
-        // UE_LOG(LogTemp, Display, TEXT("Uncrouching"));
-        UnCrouch();
-    }
-    else
-    {
-        StopSprint();
-        // UE_LOG(LogTemp, Display, TEXT("Crouching"));
-        Crouch();
+        Super::StartSprint();
     }
 }
 // Interaction Bindings
@@ -179,6 +155,7 @@ void AProtagonistCharacter::CallInteraction()
 {
     if(FocusedActor)
     {
+        UE_LOG(LogTemp, Display, TEXT("Interacting E"));
         if(IInteractInterface::Execute_GetInteractionType(FocusedActor) == InteractionType::EButton)
             IInteractInterface::Execute_DoInteract(FocusedActor, this);
     }
@@ -187,6 +164,7 @@ void AProtagonistCharacter::CallMoveInteraction()
 {
     if(FocusedActor)
     {
+        UE_LOG(LogTemp, Display, TEXT("Interacting Space"));
         if(IInteractInterface::Execute_GetInteractionType(FocusedActor) == InteractionType::SpaceButton)
         {
             IInteractInterface::Execute_DoInteract(FocusedActor,this);

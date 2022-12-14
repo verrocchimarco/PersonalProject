@@ -28,9 +28,12 @@ class INNERSANCTUM_API UInventoryComponent : public UActorComponent
         int fAvailableBackpackSpace;
         UStaticMeshComponent* CharacterBackpackMesh;
         UPROPERTY(EditAnywhere, Category="Backpack")
-        UStaticMesh* BackpackMesh;
+        UStaticMesh* BackpackMesh = nullptr;
+        UPROPERTY()
         TArray<AUsableObjects*> TPocketsHeldItems;
+        UPROPERTY()
         TArray<AUsableObjects*> TBackpackHeldItems;
+        UPROPERTY()
         TArray<UUpgrade*> TUpgrades;
         AUsableObjects* EquippedItem = nullptr;
         TPair<int,bool> EquippedItemLocation = TPair<int,bool>(-1,false);
@@ -118,5 +121,9 @@ class INNERSANCTUM_API UInventoryComponent : public UActorComponent
         UFUNCTION(BlueprintCallable)
         void RemoveBackpack();
         UFUNCTION(BlueprintCallable)
-        void EnableBackpack(UStaticMesh* newBackpackMesh=nullptr);
+        void EnableBackpack();
+        UFUNCTION(BlueprintCallable)
+        void SetBackpackMesh(UStaticMesh* newBackpackMesh);
+        UFUNCTION(BlueprintCallable,BlueprintPure)
+        UStaticMesh* GetBackpackMesh() const { return BackpackMesh;}
 };

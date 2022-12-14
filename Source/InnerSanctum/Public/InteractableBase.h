@@ -26,7 +26,7 @@ class INNERSANCTUM_API AInteractableBase : public AActor, public IInteractInterf
 		UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Interaction Params|Emissive Material")
 		float EmissiveMaterialDeltaTime = .2f;
 		
-		UPROPERTY(EditAnywhere,BlueprintReadOnly, Category ="Interaction Params")
+		UPROPERTY(EditAnywhere,BlueprintReadWrite, Category ="Interaction Params")
 		FText PromptDescription;
 		UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Interaction Params", meta=(DisplayName="Interaction Input"))
 		TEnumAsByte<InteractionType> InteractableButtonResponse = EButton;
@@ -42,4 +42,5 @@ class INNERSANCTUM_API AInteractableBase : public AActor, public IInteractInterf
 		int GetEmissiveMaterialIndex() const { return EmissiveMaterialIndex; };
 		UFUNCTION()
 		UMaterialInstanceDynamic* GetEmissiveMaterial() const { return DynamicEmissiveMaterial; }
+		void SetEmissiveMesh(UStaticMesh* newMesh);
 };

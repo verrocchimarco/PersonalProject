@@ -7,13 +7,39 @@
 #include "ProtagonistCharacter.h"
 #include "GameFramework/PlayerController.h"
 #include "Components/CapsuleComponent.h"
+#include "InteractableBase.h"
 #include "InnerSanctumGameInstance.h"
 
 void AInnerSanctumGameModeBase::BeginPlay()
 {
-    protagonistCharacter = Cast<AProtagonistCharacter>(UGameplayStatics::GetPlayerPawn(GetWorld(),0));
-    protagonistCharacter->GetHealthComponent()->OnDeathDelegate.AddDynamic(this,&AInnerSanctumGameModeBase::ActorKilled);
     UE_LOG(LogTemp, Display, TEXT("GameMode: BeginPlay"));
+    protagonistCharacter = Cast<AProtagonistCharacter>(UGameplayStatics::GetPlayerPawn(GetWorld(),0));
+    if(protagonistCharacter)
+    {
+        protagonistCharacter->GetHealthComponent()->OnDeathDelegate.AddDynamic(this,&AInnerSanctumGameModeBase::ActorKilled);
+    }
+    SetLostBackpack();
+}
+void AInnerSanctumGameModeBase::SetLostBackpack()
+{
+    UInnerSanctumGameInstance* gameInstance = Cast<UInnerSanctumGameInstance>(GetWorld()->GetGameInstance());
+    UStaticMesh* backpackMesh;
+    UE_LOG(LogTemp, Display, TEXT("GameMode: Requesting backpack info from GameInstance"));
+    if(!(gameInstance->GetPlayerHasBackpack()))
+    {
+        UE_LOG(LogTemp, Display, TEXT("GameMode: Player doesn't have a backpack"));
+        backpackMesh=gameInstance->GetLostBackpackMesh();
+        if(backpackMesh)
+        {
+            UE_LOG(LogTemp, Display, TEXT("GameMode: Retrieved backpack mesh: [%s]"),*(backpackMesh->GetName()));
+            FTransform SpawnTransform;
+            SpawnTransform.SetLocation(gameInstance->GetDeathLocation());
+            LostBackpackObject = Cast<AInteractableBase>(GetWorld()->SpawnActorDeferred<AInteractableBase>(LostBackpackObjectClass,SpawnTransform));
+            LostBackpackObject->SetEmissiveMesh(backpackMesh);
+            LostBackpackObject->FinishSpawning(SpawnTransform);
+        }
+    }
+
 }
 void AInnerSanctumGameModeBase::ActorKilled(ABaseCharacter* deadCharacter)
 {
@@ -23,7 +49,9 @@ void AInnerSanctumGameModeBase::ActorKilled(ABaseCharacter* deadCharacter)
     APlayerController* controller = Cast<APlayerController>(deadCharacter->GetController());
     deadCharacter->DetachFromControllerPendingDestroy();
 	deadCharacter->GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-    UE_LOG(LogTemp, Display, TEXT("He dead!"));
+    deadCharacter->Destroy();
+    UE_LOG(LogTemp, Display, TEXT("GameMode: Restarting Level!"));
     controller->RestartLevel();
+    // RestartPlayer(controller);
     ResetLevel();
 }

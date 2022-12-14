@@ -3,7 +3,6 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Character.h"
 #include "BaseCharacter.h"
 #include "ProtagonistCharacter.generated.h"
 
@@ -87,8 +86,6 @@ class INNERSANCTUM_API AProtagonistCharacter : public ABaseCharacter
 		UStaticMeshComponent* GetBackpackMesh() const { return uBackpackMesh; }
 		// Movement
 		virtual void StartSprint() override;
-		virtual void StopSprint() override;
-		virtual void ToggleCrouch() override;
 		
 		// Interaction
 		UFUNCTION(BlueprintNativeEvent, BlueprintCallable)

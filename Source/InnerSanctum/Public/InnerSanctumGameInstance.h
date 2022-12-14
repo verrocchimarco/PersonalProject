@@ -6,8 +6,8 @@
 #include "Engine/GameInstance.h"
 #include "NotesDataAsset.h"
 #include "Containers/Map.h"
+#include "GameFramework/PlayerStart.h"
 #include "InnerSanctumGameInstance.generated.h"
-
 /**
  * 
  */
@@ -28,11 +28,17 @@ class INNERSANCTUM_API UInnerSanctumGameInstance : public UGameInstance
 		TArray<FText> LocationsList;
 		// Player inventory
 		bool bPlayerHasBackpack = true;
+		FVector DeathLocation;
+		UStaticMesh* LostBackpackMesh = nullptr;
+		UPROPERTY()
 		TArray<TSubclassOf<AUsableObjects>> PlayerPocketsItems;
+		UPROPERTY()
         TArray<TSubclassOf<AUsableObjects>> PlayerBackpackItems;
+		UPROPERTY()
         TArray<TSubclassOf<UUpgrade>> PlayerUpgrades;
 		TPair<int,bool> EquippedItemLocation = TPair<int,bool>(-1,false);
-		
+		UPROPERTY()
+		FName ActiveRespawnPointTag = TEXT("EntryPoint");
 	public:
 		virtual void Init() override;
 		// Notes management
@@ -52,9 +58,17 @@ class INNERSANCTUM_API UInnerSanctumGameInstance : public UGameInstance
 		TArray<TSubclassOf<AUsableObjects>> GetPlayerPocketsItems() 	const { return PlayerPocketsItems; }
         TArray<TSubclassOf<AUsableObjects>> GetPlayerBackpackItems() 	const { return PlayerBackpackItems;}
         TArray<TSubclassOf<UUpgrade>> 		GetPlayerUpgrades() 		const { return PlayerUpgrades;}
-		TPair<int,bool> 		GetEquippedItemLocation() 	const { return EquippedItemLocation;}
-		bool					GetPlayerHasBackpack()		const { return bPlayerHasBackpack;}
-		
+		TPair<int,bool> 					GetEquippedItemLocation() 	const { return EquippedItemLocation;}
+		bool								GetPlayerHasBackpack()		const { return bPlayerHasBackpack;}
+		void								SavePlayerInventory(AProtagonistCharacter* protagonistCharacter, bool isDead);
 		UFUNCTION()
 		void ActorKilled(ABaseCharacter* deadCharacter);
+		UFUNCTION(BlueprintCallable,BlueprintPure)
+		UStaticMesh* GetLostBackpackMesh() const { return LostBackpackMesh; }
+		UFUNCTION(BlueprintCallable,BlueprintPure)
+		FVector GetDeathLocation() const { return DeathLocation; }
+		void SetRespawnPointTag(FName newRestartPoint) { ActiveRespawnPointTag = newRestartPoint; }
+		void ResetRespawnPointTag() { ActiveRespawnPointTag = TEXT("EntryPoint"); }
+		UFUNCTION(BlueprintCallable,BlueprintPure)
+		FName GetRespawnPointTag() const { return ActiveRespawnPointTag;}
 };

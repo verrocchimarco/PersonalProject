@@ -19,8 +19,11 @@ void AUsableObjects::BeginPlay()
 {
 	Super::BeginPlay();
 	playerCharacter = Cast<AProtagonistCharacter>(UGameplayStatics::GetPlayerCharacter(GetWorld(),0));
-	AttachmentSocket = playerCharacter->GetItemBoneSocket();
-	CharacterMesh = playerCharacter->GetMesh();
+	if(playerCharacter)
+	{
+		AttachmentSocket = playerCharacter->GetItemBoneSocket();
+		CharacterMesh = playerCharacter->GetMesh();
+	}
 }
 
 // Called every frame

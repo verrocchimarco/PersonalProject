@@ -22,16 +22,20 @@ UInventoryComponent::UInventoryComponent()
 void UInventoryComponent::BeginPlay()
 {
 	Super::BeginPlay();
-	GameInstanceInit();
+	// Setup basic backpack mesh onto the character
 	CharacterBackpackMesh = Cast<AProtagonistCharacter>(GetOwner())->GetBackpackMesh();
+	SetBackpackMesh(BackpackMesh);
+	GameInstanceInit();
 	if(bHasBackpack)
 	{
-		EnableBackpack(BackpackMesh);
+		EnableBackpack();
 	}
 	else
 	{
 		RemoveBackpack();
 	}
+	UE_LOG(LogTemp, Display, TEXT("Inventory Component: Available space in pockets: %d"),fAvailablePocketsSpace);
+	UE_LOG(LogTemp, Display, TEXT("Inventory Component: Available space in backpack: %d"),fAvailableBackpackSpace);
 }
 
 
@@ -58,8 +62,9 @@ bool UInventoryComponent::SetPocketsInventorySize(int newSize)
 }
 bool UInventoryComponent::SetBackpackInventorySize(int newSize)
  {
-	if(newSize >= BackpackInventorySize)
+	if(newSize > BackpackInventorySize)
 	{
+		UE_LOG(LogTemp, Display, TEXT("Inventory Component: Increasing backpack size"))
 		fAvailableBackpackSpace += newSize - BackpackInventorySize;
 		BackpackInventorySize = newSize;
 		return true;
@@ -74,7 +79,7 @@ bool UInventoryComponent::AddItem(AUsableObjects* newItem)
 {
 	if(!newItem)
 	{
-		UE_LOG(LogTemp, Display, TEXT("Inventory: Item added does not exist"));
+		UE_LOG(LogTemp, Display, TEXT("Inventory Component: Item added does not exist"));
 		return false;
 	}
 	newItem->SetActorHiddenInGame(true);
@@ -84,7 +89,7 @@ bool UInventoryComponent::AddItem(AUsableObjects* newItem)
 		TPocketsHeldItems.Emplace(newItem);
 		fAvailablePocketsSpace -= itemSlotSize;
 	}
-	else if ( fAvailableBackpackSpace - itemSlotSize >= 0 )
+	else if ( fAvailableBackpackSpace - itemSlotSize >= 0 && bHasBackpack)
 	{
 		TBackpackHeldItems.Emplace(newItem);
 		fAvailableBackpackSpace -= itemSlotSize;
@@ -98,10 +103,10 @@ bool UInventoryComponent::RemoveItem(int index, bool isBackpackInventory, bool s
 {
 	bool removalSuccessful = false;
 	AUsableObjects* ObjectReference = nullptr;
-	UE_LOG(LogTemp, Display, TEXT("Remove index: %d"),index);
+	UE_LOG(LogTemp, Display, TEXT("Inventory Component: Remove index: %d"),index);
 	if(!isBackpackInventory && TPocketsHeldItems.IsValidIndex(index))
 	{
-		UE_LOG(LogTemp, Display, TEXT("Item in pockets removal"));
+		UE_LOG(LogTemp, Display, TEXT("Inventory Component: Item in pockets removal"));
 		fAvailablePocketsSpace += TPocketsHeldItems[index]->GetInventoryDetails().iSlotSize;
 		removalSuccessful = true;
 		ObjectReference = TPocketsHeldItems[index];
@@ -109,7 +114,7 @@ bool UInventoryComponent::RemoveItem(int index, bool isBackpackInventory, bool s
 	}
 	else if(isBackpackInventory && bHasBackpack && TBackpackHeldItems.IsValidIndex(index))
 	{
-		UE_LOG(LogTemp, Display, TEXT("Item in backpack removal"));
+		UE_LOG(LogTemp, Display, TEXT("Inventory Component: Item in backpack removal"));
 		fAvailableBackpackSpace += TBackpackHeldItems[index]->GetInventoryDetails().iSlotSize;
 		removalSuccessful = true;
 		ObjectReference = TBackpackHeldItems[index];
@@ -124,7 +129,7 @@ bool UInventoryComponent::RemoveItem(int index, bool isBackpackInventory, bool s
 		// If the removed item is also the equipped one, unequip it
 		if (EquippedItem == ObjectReference)
 		{
-			UE_LOG(LogTemp, Display, TEXT("Unequipping item"));
+			UE_LOG(LogTemp, Display, TEXT("Inventory Component: Unequipping item"));
 			UnequipItem();
 		}
 		if(shouldSpawnPickup)
@@ -153,7 +158,7 @@ bool UInventoryComponent::UseItemAtIndex(int index, bool isBackpackInventory)
 			fAvailablePocketsSpace += TPocketsHeldItems[index]->GetInventoryDetails().iSlotSize;
 			TPocketsHeldItems.RemoveAtSwap(index);
 			usageSuccessful = true;
-			UE_LOG(LogTemp, Display, TEXT("Removing Item at %d, available pocket space %d"),index,fAvailablePocketsSpace);
+			UE_LOG(LogTemp, Display, TEXT("Inventory Component: Removing Item at %d, available pocket space %d"),index,fAvailablePocketsSpace);
 		}
 	}
 	else if(isBackpackInventory && bHasBackpack && TBackpackHeldItems.IsValidIndex(index))
@@ -164,7 +169,7 @@ bool UInventoryComponent::UseItemAtIndex(int index, bool isBackpackInventory)
 			fAvailableBackpackSpace += TBackpackHeldItems[index]->GetInventoryDetails().iSlotSize;
 			TBackpackHeldItems.RemoveAtSwap(index);
 			usageSuccessful = true;
-			UE_LOG(LogTemp, Display, TEXT("Removing Item at %d, available backpack space %d"),index,fAvailableBackpackSpace);
+			UE_LOG(LogTemp, Display, TEXT("Inventory Component: Removing Item at %d, available backpack space %d"),index,fAvailableBackpackSpace);
 		}
 	}
 	if(usageSuccessful)
@@ -216,19 +221,19 @@ bool UInventoryComponent::SwitchInventoryItems(int firstItemIndex, bool isFirstI
 	auto getItem = [](int& index, TArray<AUsableObjects*>& inventory){ return (inventory.IsValidIndex(index) ? inventory[index] : nullptr);	};
 	int logb1 = isFirstItemInBackpack ? 1 : 0;
 	int logb2 = isSecondItemInBackpack ? 1 : 0;
-	UE_LOG(LogTemp, Display, TEXT("Swap requested.\nItem 1 index:[%d] isBackpack[%d]\nItem 2 index:[%d] isBackpack[%d]"),firstItemIndex,logb1,secondItemIndex,logb2);
+	UE_LOG(LogTemp, Display, TEXT("Inventory Component:  Swaprequested.\nItem 1 index:[%d] isBackpack[%d]\nItem 2 index:[%d] isBackpack[%d]"),firstItemIndex,logb1,secondItemIndex,logb2);
 	// Return true if the items are in the same sub inventory. Switch useless, but perform it because otherwise it looks bad on the UI. Goddamn gamers
 	if( (isFirstItemInBackpack && isSecondItemInBackpack) )
 	{
 		if(firstItemIndex >= 0 && secondItemIndex >= 0 )
 		{
-			UE_LOG(LogTemp, Display, TEXT("Swap not needed. Both in backpack"));
+			UE_LOG(LogTemp, Display, TEXT("Inventory Component:  Swapnot needed. Both in backpack"));
 			TBackpackHeldItems.Swap(firstItemIndex,secondItemIndex);
 			return true;
 		}
 		else
 		{
-			UE_LOG(LogTemp, Display, TEXT("Swap impossible. Both in backpack but one doesn't exist"));
+			UE_LOG(LogTemp, Display, TEXT("Inventory Component:  Swapimpossible. Both in backpack but one doesn't exist"));
 			return false;
 		}
 	}
@@ -236,26 +241,26 @@ bool UInventoryComponent::SwitchInventoryItems(int firstItemIndex, bool isFirstI
 	{
 		if(firstItemIndex >= 0 && secondItemIndex >= 0 )
 		{
-			UE_LOG(LogTemp, Display, TEXT("Swap not needed. Both in pockets"));
+			UE_LOG(LogTemp, Display, TEXT("Inventory Component:  Swapnot needed. Both in pockets"));
 			TPocketsHeldItems.Swap(firstItemIndex,secondItemIndex);
 			return true;
 		}
 		else
 		{
-			UE_LOG(LogTemp, Display, TEXT("Swap impossible. Both in items but one doesn't exist"));
+			UE_LOG(LogTemp, Display, TEXT("Inventory Component:  Swapimpossible. Both in items but one doesn't exist"));
 			return false;
 		}
 	}
 	// Stop swap if both indexes are -1
 	if (firstItemIndex < 0 && secondItemIndex < 0 )
 	{
-		UE_LOG(LogTemp, Display, TEXT("Swap impossible. Both don't exist"));
+		UE_LOG(LogTemp, Display, TEXT("Inventory Component:  Swapimpossible. Both don't exist"));
 		return false;
 	}
 	// Don't proceed if one of the items is in the backpack when the backpack isn't available
 	if( (isFirstItemInBackpack || isSecondItemInBackpack) && !bHasBackpack )
 	{
-		UE_LOG(LogTemp, Display, TEXT("Swap impossible. Backpack not available"));
+		UE_LOG(LogTemp, Display, TEXT("Inventory Component:  Swapimpossible. Backpack not available"));
 		return false;
 	}
 	// Get items from the 2 different subinventories
@@ -280,7 +285,7 @@ bool UInventoryComponent::SwitchInventoryItems(int firstItemIndex, bool isFirstI
 		}
 		else
 		{
-			UE_LOG(LogTemp, Display, TEXT("Swap impossible. Available size not sufficient. Pockets projected size [%d] Backpack projected size [%d]"), swapSizeResultPockets,swapSizeResultBackpack);
+			UE_LOG(LogTemp, Display, TEXT("Inventory Component:  Swapimpossible. Available size not sufficient. Pockets projected size [%d] Backpack projected size [%d]"), swapSizeResultPockets,swapSizeResultBackpack);
 			return false;
 		}
 	}
@@ -299,7 +304,7 @@ bool UInventoryComponent::SwitchInventoryItems(int firstItemIndex, bool isFirstI
 		}
 		else
 		{
-			UE_LOG(LogTemp, Display, TEXT("Swap impossible. Available size not sufficient. Backpack projected size [%d]"),swapSizeResultBackpack);
+			UE_LOG(LogTemp, Display, TEXT("Inventory Component:  Swapimpossible. Available size not sufficient. Backpack projected size [%d]"),swapSizeResultBackpack);
 			return false;
 		}
 	}
@@ -318,13 +323,13 @@ bool UInventoryComponent::SwitchInventoryItems(int firstItemIndex, bool isFirstI
 		}
 		else
 		{
-			UE_LOG(LogTemp, Display, TEXT("Swap impossible. Available size not sufficient. Pockets projected size [%d]"),swapSizeResultPockets);
+			UE_LOG(LogTemp, Display, TEXT("Inventory Component:  Swapimpossible. Available size not sufficient. Pockets projected size [%d]"),swapSizeResultPockets);
 			return false;
 		}
 	}
 	else
 	{
-		UE_LOG(LogTemp, Display, TEXT("Swap impossible. Both items don't exist"));
+		UE_LOG(LogTemp, Display, TEXT("Inventory Component:  Swapimpossible. Both items don't exist"));
 		return false;
 	}
 }
@@ -421,15 +426,24 @@ bool UInventoryComponent::AddUpgrade(UUpgrade* newUpgrade)
 		UE_LOG(LogTemp, Display, TEXT("Passed an invalid upgrade"))
 		return false;
 	}
+	// Do not allow duplicates
 	for (UUpgrade* upgrade : TUpgrades)
 	{
-		if(*upgrade == *newUpgrade)
+		if(*upgrade == *newUpgrade && upgrade->GetUpgradeType() == UpgradeType::Generic)
 		{
 			return false;
 		}
 	}
 	if(newUpgrade->EnableUpgrade())
 	{
+		UE_LOG(LogTemp, Display, TEXT("Inventory Component: Upgrade enabled. Adding it to array"))
+		// If the new upgrade is of type Backpack but the character currently doesn't have its backpack, remove any pre existing Backpack upgrade and replace it
+		int32 preExistingBackpackIndex = TUpgrades.IndexOfByPredicate([&](UUpgrade* const upgrade) { return upgrade && upgrade->GetUpgradeType() == UpgradeType::Backpack; });
+		if(preExistingBackpackIndex != INDEX_NONE && !bHasBackpack)
+		{
+			UE_LOG(LogTemp, Display, TEXT("Inventory Component: Replacing pre existing backpack"))
+			TUpgrades.RemoveAtSwap(preExistingBackpackIndex);
+		}
 		TUpgrades.Emplace(newUpgrade);
 		return true;
 	}
@@ -444,7 +458,6 @@ bool UInventoryComponent::RemoveUpgrade(int index)
 	{
 		UUpgrade* removedUpgrade = TUpgrades[index];
 		TUpgrades.RemoveAt(index);
-		removedUpgrade->DestroyComponent();
 		return true;
 	}
 	else
@@ -453,58 +466,75 @@ bool UInventoryComponent::RemoveUpgrade(int index)
 	}
 }
 
-void UInventoryComponent::RemoveBackpack()
+void UInventoryComponent::EnableBackpack()
 {
-	CharacterBackpackMesh->SetVisibility(false);
-	bHasBackpack = false;
-}
-
-void UInventoryComponent::EnableBackpack(UStaticMesh* newBackpackMesh)
-{
-	if(newBackpackMesh)
-	{
-		CharacterBackpackMesh->SetStaticMesh(newBackpackMesh);	
-	}
+	UE_LOG(LogTemp, Display, TEXT("Inventory Component: Enabling Backpack"))
 	CharacterBackpackMesh->SetVisibility(true);
 	bHasBackpack=true;
 }
 
+void UInventoryComponent::RemoveBackpack()
+{
+	UE_LOG(LogTemp, Display, TEXT("Inventory Component: Disabling backpack"))
+	CharacterBackpackMesh->SetVisibility(false);
+	bHasBackpack = false;
+}
+
+void UInventoryComponent::SetBackpackMesh(UStaticMesh* newBackpackMesh)
+{
+	BackpackMesh = newBackpackMesh;
+	if(BackpackMesh)
+	{
+		CharacterBackpackMesh->SetStaticMesh(newBackpackMesh);
+		UE_LOG(LogTemp, Display, TEXT("Inventory Component: Setting backpack mesh [%s]"),*(BackpackMesh->GetName()));
+	}
+	else
+	{
+		UE_LOG(LogTemp, Display, TEXT("Inventory Component: No backpack mesh defined"));
+	}
+}	
 void UInventoryComponent::GameInstanceInit()
 {
 	UInnerSanctumGameInstance* gameInstance = Cast<UInnerSanctumGameInstance>(GetWorld()->GetGameInstance());
-	UE_LOG(LogTemp, Display, TEXT("Inventory: retrieving data from game instance"));
-	EquippedItemLocation = gameInstance->GetEquippedItemLocation(); UE_LOG(LogTemp, Display, TEXT("Equipped Item location:[%d][%d]"),EquippedItemLocation.Key,EquippedItemLocation.Value);
-	bHasBackpack = gameInstance->GetPlayerHasBackpack(); UE_LOG(LogTemp, Display, TEXT("Player backpack availability:[%d]"),bHasBackpack);
-	// for(TSubclassOf<UUpgrade> upgradeClass : gameInstance->GetPlayerUpgrades())
-	// {
-	// 	UUpgrade* newUpgrade = GetWorld()->SpawnActor(upgradeClass);
-	// 	bool success = newUpgrade->EnableUpgrade();
-	// 	TUpgrades.Emplace(newUpgrade);
-	// 	UE_LOG(LogTemp, Display, TEXT("Adding upgrade: [%s] | Success: [%d]"),*(newUpgrade->GetName()),success);
-	// }
+	UE_LOG(LogTemp, Display, TEXT("Inventory Component: retrieving data from game instance"));
+	AProtagonistCharacter* playerCharacter = Cast<AProtagonistCharacter>(GetOwner());
+	// Always call Upgrades first to ensure all the statuses upgrades are applied before the inventory might be changed
+	for(TSubclassOf<UUpgrade> upgradeClass : gameInstance->GetPlayerUpgrades())
+	{
+		UUpgrade* newUpgrade = NewObject<UUpgrade>(this,upgradeClass);
+		newUpgrade->SetMainCharacter(playerCharacter);
+		AddUpgrade(newUpgrade);
+		UE_LOG(LogTemp, Display, TEXT("Inventory Component: Adding upgrade: [%s]"),*(newUpgrade->GetName()));
+	}
 	for(TSubclassOf<AUsableObjects> itemClass : gameInstance->GetPlayerPocketsItems())
 	{
 		AUsableObjects* item = Cast<AUsableObjects>(GetWorld()->SpawnActor(itemClass));
-		bool success = AddItem(item);
-		UE_LOG(LogTemp, Display, TEXT("Adding pocket item: [%s] | Success: [%d]"),*(item->GetName()),success);	
+		TPocketsHeldItems.Emplace(item);
+		fAvailablePocketsSpace -= item->GetInventoryDetails().iSlotSize;
+		UE_LOG(LogTemp, Display, TEXT("Inventory Component: Adding pocket item: [%s]"),*(item->GetName()));	
 	}
-		
-	// }
-	// for(AUsableObjects* item : gameInstance->GetTPlayerBackpackItems())
-	// {
-	// 	bool success = AddItem(item);
-	// 	UE_LOG(LogTemp, Display, TEXT("Adding backpack item: [%s] | Success: [%d]"),*(item->GetName()),success);
-	// }
+	for(TSubclassOf<AUsableObjects> itemClass : gameInstance->GetPlayerBackpackItems())
+	{
+		AUsableObjects* item = Cast<AUsableObjects>(GetWorld()->SpawnActor(itemClass));
+		TBackpackHeldItems.Emplace(item);
+		fAvailableBackpackSpace -= item->GetInventoryDetails().iSlotSize;
+		UE_LOG(LogTemp, Display, TEXT("Inventory Component: Adding backpack item: [%s]"),*(item->GetName()));
+	}
+	EquippedItemLocation 	= gameInstance->GetEquippedItemLocation(); UE_LOG(LogTemp, Display, TEXT("Equipped Item location:[%d][%d]"),EquippedItemLocation.Key,EquippedItemLocation.Value);
+	bHasBackpack 			= gameInstance->GetPlayerHasBackpack(); UE_LOG(LogTemp, Display, TEXT("Player backpack availability:[%d]"),bHasBackpack);
 	// Equip item if it's in an available location
 	if(EquippedItemLocation.Key != -1)
 	{
+		UE_LOG(LogTemp, Display, TEXT("Inventory Component: Equipped item location is valid"));
 		// If it's in the backpack but the backpack is not available, unset the equipped item location
 		if(EquippedItemLocation.Value && !bHasBackpack)
 		{
+			UE_LOG(LogTemp, Display, TEXT("Inventory Component: Equipped item points at backpack"));
 			EquippedItemLocation = TPair<int,bool>(-1,false);
 		}
 		else
 		{
+			UE_LOG(LogTemp, Display, TEXT("Inventory Component: setting equipped item to index %d"),EquippedItemLocation.Key);
 			EquipItem(EquippedItemLocation.Key, EquippedItemLocation.Value);
 		}
 	}

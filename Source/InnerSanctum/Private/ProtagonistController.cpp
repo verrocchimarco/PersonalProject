@@ -10,6 +10,7 @@
 #include "Kismet/KismetSystemLibrary.h"
 #include "Math/UnrealMathUtility.h"
 #include "PlayerMenuWidget.h"
+#include "GameFramework/PlayerStart.h"
 
 void AProtagonistController::BeginPlay()
 {
@@ -32,6 +33,8 @@ void AProtagonistController::BeginPlay()
     WidgetPlayerMenu->SetVisibility(ESlateVisibility::Collapsed);
 	WidgetPlayerMenu->AddToViewport();
     fDefaultFOV = PlayerCameraManager->DefaultFOV;
+    UE_LOG(LogTemp, Display, TEXT("Protagonist Controller: Spawning at: %s"),*(Cast<APlayerStart>(StartSpot)->PlayerStartTag.ToString()));
+    
 }
 void AProtagonistController::Tick(float DeltaSeconds)
 {
@@ -55,13 +58,27 @@ void AProtagonistController::SetupInputComponent()
 
 void AProtagonistController::MoveForward(float axisValue)
 {
-    FVector playerForwardVector = aControlledCharacter->GetActorForwardVector();
-    aControlledCharacter->AddMovementInput(playerForwardVector,axisValue);
+    if(aControlledCharacter->GetIsResting() && axisValue)
+    {
+        aControlledCharacter->StopResting();
+    }
+    else
+    {
+        FVector playerForwardVector = aControlledCharacter->GetActorForwardVector();
+        aControlledCharacter->AddMovementInput(playerForwardVector,axisValue);
+    }
 }
 void AProtagonistController::StrafeRight(float axisValue)
 {
-    FVector cameraRightVector = uPlayerCamera->GetRightVector();
-    aControlledCharacter->AddMovementInput(cameraRightVector,axisValue);
+    if(aControlledCharacter->GetIsResting() && axisValue)
+    {
+        aControlledCharacter->StopResting();
+    }
+    else
+    {
+        FVector cameraRightVector = uPlayerCamera->GetRightVector();
+        aControlledCharacter->AddMovementInput(cameraRightVector,axisValue);
+    }
 }
 
 void AProtagonistController::LookUp(float axisValue)
@@ -98,7 +115,7 @@ void AProtagonistController::StopAim()
 
 void AProtagonistController::ToggleInventory()
 {
-    if(!bIsInventoryOpen && !Cast<UCharacterMovementComponent>(aControlledCharacter->GetMovementComponent())->IsFalling())
+    if(!bIsInventoryOpen && !Cast<UCharacterMovementComponent>(aControlledCharacter->GetMovementComponent())->IsFalling() && !aControlledCharacter->GetIsResting())
     {
         bIsInventoryOpen = true;
         FInputModeUIOnly fInputMode;

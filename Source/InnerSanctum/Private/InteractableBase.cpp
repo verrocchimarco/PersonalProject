@@ -24,3 +24,8 @@ void AInteractableBase::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 
 }
+
+void AInteractableBase::SetEmissiveMesh(UStaticMesh* newMesh)
+{
+	EmissiveMesh->SetStaticMesh(newMesh);
+}

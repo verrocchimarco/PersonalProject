@@ -11,7 +11,6 @@
 void UInnerSanctumGameInstance::Init()
 {
     Super::Init();
-    UE_LOG(LogTemp, Display, TEXT("Game Instance started. Good boy"));
     int32 index = 0;
     for(auto& noteAsset : NotesCollection->notes)
     {
@@ -88,21 +87,48 @@ void UInnerSanctumGameInstance::ActorKilled(ABaseCharacter* deadCharacter)
     AProtagonistCharacter* protagonistCharacter = Cast<AProtagonistCharacter>(deadCharacter);
     if(protagonistCharacter)
     {
-        UE_LOG(LogProcess, Display, TEXT("GameInstance: detected character's death. Copying inventory"));
-        UInventoryComponent* playerInventory = protagonistCharacter->GetInventoryComponent();
-        for(auto& pocketItem : playerInventory->GetPocketsHeldItems())
+        SavePlayerInventory(protagonistCharacter,true);
+    }
+}
+
+void UInnerSanctumGameInstance::SavePlayerInventory(AProtagonistCharacter* protagonistCharacter, bool isDead)
+{
+    UInventoryComponent* playerInventory = protagonistCharacter->GetInventoryComponent();
+    PlayerPocketsItems.Empty();
+    PlayerBackpackItems.Empty();
+    PlayerUpgrades.Empty();
+    for(auto& pocketItem : playerInventory->GetPocketsHeldItems())
+    {
+        UE_LOG(LogProcess, Display, TEXT("GameInstance: copying pocket item %s"),*(pocketItem->GetName()));
+        PlayerPocketsItems.Add(pocketItem->GetClass());
+    }
+    for(auto& backpackItem : playerInventory->GetBackpackHeldItems())
+    {
+        UE_LOG(LogProcess, Display, TEXT("GameInstance: copying backpack item %s"),*(backpackItem->GetName()));
+        PlayerBackpackItems.Add(backpackItem->GetClass());
+    }
+    for(auto& upgrade : playerInventory->GetUpgrades())
+    {
+        PlayerUpgrades.Add(upgrade->GetClass());
+        UE_LOG(LogProcess, Display, TEXT("GameInstance: copying upgrade item %s"),*(upgrade->GetName()));
+    }
+    EquippedItemLocation = playerInventory->GetEquippedItemLocation();
+    // Store backpack mesh and death location, if player died. GameMode will use this data
+    if(isDead)
+    {
+        UE_LOG(LogTemp, Display, TEXT("GameInstance: Character died"));
+        // If the player has lost the backpack in this instance, load the location. Otherwise don't change it (player has died and lost the backpack already)
+        if(playerInventory->hasBackpack())
         {
-            PlayerPocketsItems.Add(pocketItem->GetClass());
+            DeathLocation = protagonistCharacter->GetActorLocation();
         }
-        for(auto& backpackItem : playerInventory->GetBackpackHeldItems())
-        {
-            PlayerBackpackItems.Add(backpackItem->GetClass());
-        }
-        for(auto& upgrade : playerInventory->GetUpgrades())
-        {
-            PlayerUpgrades.Add(upgrade->GetClass());
-        }
-		EquippedItemLocation = playerInventory->GetEquippedItemLocation();
+        LostBackpackMesh = playerInventory->GetBackpackMesh();
         bPlayerHasBackpack = false;
+        UE_LOG(LogTemp, Display, TEXT("GameInstance: Obtained character's current backpack: [%s]"), *(LostBackpackMesh->GetName()));
+    }
+    else
+    {
+        bPlayerHasBackpack = playerInventory->hasBackpack();
+        LostBackpackMesh = nullptr;
     }
 }
