@@ -12,14 +12,16 @@
 class ABaseCharacter;
 class APlayerStart;
 UCLASS()
-class INNERSANCTUM_API ARestingPoint : public AInteractableBase
+class INNERSANCTUM_API ARestingPoint : public AActor, public IInteractInterface
 {
 	GENERATED_BODY()
 	private:
 		ABaseCharacter* playerCharacter;
-		UPROPERTY(VisibleAnywhere, Category="Respawn Point Details")
-		bool bIsHealing;
 	protected:
+		UPROPERTY(EditAnywhere,BlueprintReadWrite, Category ="Interaction Params", meta=(DisplayName="Prompt Description"))
+		FText PromptDescription;
+		UPROPERTY(EditAnywhere,BlueprintReadWrite, Category ="Interaction Params", meta=(DisplayName="Interaction Enabled"))
+		bool bCanBeInteracted = true;
 		virtual void BeginPlay() override;
 	public:
 		UPROPERTY(EditAnywhere, Category="Respawn Point Details")
@@ -29,3 +31,4 @@ class INNERSANCTUM_API ARestingPoint : public AInteractableBase
 		UFUNCTION(BlueprintCallable)
 		void ActivateRespawnPoint();
 };
+

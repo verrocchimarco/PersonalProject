@@ -7,6 +7,7 @@
 #include "ProtagonistCharacter.h"
 #include "GameFramework/PlayerController.h"
 #include "Components/CapsuleComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "InteractableBase.h"
 #include "InnerSanctumGameInstance.h"
 
@@ -44,12 +45,22 @@ void AInnerSanctumGameModeBase::SetLostBackpack()
 void AInnerSanctumGameModeBase::ActorKilled(ABaseCharacter* deadCharacter)
 {
     UE_LOG(LogProcess, Display, TEXT("GameMode: detected character's death"));
-    UInnerSanctumGameInstance* gameInstance = Cast<UInnerSanctumGameInstance>(GetWorld()->GetGameInstance());
-    gameInstance->ActorKilled(deadCharacter);
-    APlayerController* controller = Cast<APlayerController>(deadCharacter->GetController());
-    deadCharacter->DetachFromControllerPendingDestroy();
-	deadCharacter->GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-    deadCharacter->Destroy();
+    if(Cast<AProtagonistCharacter>(deadCharacter))
+    {
+        // If the player has died, register event to gameInstance and then wait for the death animation to end
+        UInnerSanctumGameInstance* gameInstance = Cast<UInnerSanctumGameInstance>(GetWorld()->GetGameInstance());
+        gameInstance->ActorKilled(deadCharacter);
+        Cast<UCharacterMovementComponent>(deadCharacter->GetMovementComponent())->DisableMovement();
+        deadCharacter->DisableInput(Cast<APlayerController>(deadCharacter->GetController()));
+    }
+}
+
+void AInnerSanctumGameModeBase::PlayerDeathNotification(AProtagonistCharacter* deadPlayer)
+{
+    APlayerController* controller = Cast<APlayerController>(deadPlayer->GetController());
+    deadPlayer->DetachFromControllerPendingDestroy();
+	deadPlayer->GetCapsuleComponent()->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+    deadPlayer->Destroy();
     UE_LOG(LogTemp, Display, TEXT("GameMode: Restarting Level!"));
     controller->RestartLevel();
     // RestartPlayer(controller);

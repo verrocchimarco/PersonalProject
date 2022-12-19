@@ -4,22 +4,24 @@
 
 #include "CoreMinimal.h"
 #include "BaseCharacter.h"
+#include "InteractInterface.h"
 #include "ProtagonistCharacter.generated.h"
 
 class UCameraComponent;
 class USpringArmComponent;
 class UCapsuleComponent;
 class UInputComponent;
-class UWidgetComponent;
-class UUserWidget;
+class UInteractionPromptWidget;
 class UHealthComponent;
 class UInventoryComponent;
 class USkeletalMeshComponent;
 class USkeletalMesh;
+class UInteractionPromptWidget;
 UCLASS()
 class INNERSANCTUM_API AProtagonistCharacter : public ABaseCharacter
 {
 	GENERATED_BODY()
+	DECLARE_DELEGATE_OneParam(FInteractionInputDelegate, InteractionType);
 	public:	
 		// Sets default values for this character's properties
 		AProtagonistCharacter();
@@ -53,7 +55,6 @@ class INNERSANCTUM_API AProtagonistCharacter : public ABaseCharacter
 		bool bIsReadyToUseEquip = false;
 		UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Usable Items", meta=(AllowPrivateAccess="true",DisplayName="Item attachment socket"))
 		FString sRightArmSocket;
-		// std::string const sSocketName_SpringArm = "clavicle_CameraSocket";
 		UPROPERTY(EditDefaultsOnly, BlueprintReadOnly, Category = "Usable Items", meta=(AllowPrivateAccess="true",DisplayName="Flashlight attachment socket"))
 		FString sLeftArmSocket;
 
@@ -84,14 +85,13 @@ class INNERSANCTUM_API AProtagonistCharacter : public ABaseCharacter
 		UFUNCTION(BlueprintCallable, BlueprintPure)
 		FString GetSecondaryItemBoneSocket() const { return sLeftArmSocket; }
 		UStaticMeshComponent* GetBackpackMesh() const { return uBackpackMesh; }
+		
 		// Movement
 		virtual void StartSprint() override;
 		
 		// Interaction
-		UFUNCTION(BlueprintNativeEvent, BlueprintCallable)
 		void UpdateInteractionWidget(AActor* InteractableActor, FVector TraceImpactPoint);
-		void CallInteraction();
-		void CallMoveInteraction();
+		void CallInteraction(InteractionType ButtonPressed);
 		
 		// Equipped Item usage
 		void SetIsEquipReady(bool newReady);

@@ -69,6 +69,8 @@ class INNERSANCTUM_API UHealthComponent : public UActorComponent
 		float GetMaxHealth() const { return fMaxHealth; }
 		UFUNCTION(BlueprintCallable, BlueprintPure)
 		float GetCurrentHealth() const { return fCurrentHealth; }
+		UFUNCTION(BlueprintCallable, BlueprintPure)
+		bool IsDead() const { return fCurrentHealth <= 0; }
 		UFUNCTION(BlueprintCallable)
 		bool HealHealth(float healingAmount);
 		UFUNCTION(BlueprintCallable)

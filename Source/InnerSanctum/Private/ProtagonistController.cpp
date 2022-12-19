@@ -58,27 +58,13 @@ void AProtagonistController::SetupInputComponent()
 
 void AProtagonistController::MoveForward(float axisValue)
 {
-    if(aControlledCharacter->GetIsResting() && axisValue)
-    {
-        aControlledCharacter->StopResting();
-    }
-    else
-    {
-        FVector playerForwardVector = aControlledCharacter->GetActorForwardVector();
-        aControlledCharacter->AddMovementInput(playerForwardVector,axisValue);
-    }
+    FVector playerForwardVector = aControlledCharacter->GetActorForwardVector();
+    aControlledCharacter->AddMovementInput(playerForwardVector,axisValue);
 }
 void AProtagonistController::StrafeRight(float axisValue)
 {
-    if(aControlledCharacter->GetIsResting() && axisValue)
-    {
-        aControlledCharacter->StopResting();
-    }
-    else
-    {
-        FVector cameraRightVector = uPlayerCamera->GetRightVector();
-        aControlledCharacter->AddMovementInput(cameraRightVector,axisValue);
-    }
+    FVector cameraRightVector = uPlayerCamera->GetRightVector();
+    aControlledCharacter->AddMovementInput(cameraRightVector,axisValue);
 }
 
 void AProtagonistController::LookUp(float axisValue)

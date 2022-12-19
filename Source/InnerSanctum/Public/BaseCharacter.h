@@ -42,11 +42,6 @@ class INNERSANCTUM_API ABaseCharacter : public ACharacter, public IGameplayTagAs
 		// Resting params
 		UPROPERTY(VisibleAnywhere)
 		bool bIsResting = false;
-		UPROPERTY(EditAnywhere)
-		float fHealthRecoveryDelay = 0.8f;
-		UPROPERTY(EditAnywhere)
-		float fHealthRecoveryWhileResting = 15.f;
-		FTimerHandle tHealthRecoveryTimer;
 		// Dismemberment
 		UPROPERTY(EditAnywhere, BlueprintReadOnly, Category="Dismemberment", meta=(DisplayName="Dismemberable Body Parts Meshes"))
 		TMap<FName, struct FDismemberedMesh> mBodyParts;
@@ -71,9 +66,6 @@ class INNERSANCTUM_API ABaseCharacter : public ACharacter, public IGameplayTagAs
 		UFUNCTION(BlueprintPure)
 		virtual bool GetIsRunning() const { return bIsRunning; }
 		// Resting
-		void BeginResting();
-		void HealWhileResting();
-		void StopResting();
 		UFUNCTION(BlueprintPure)
 		bool GetIsResting() const { return bIsResting;}
 		virtual void GetOwnedGameplayTags(FGameplayTagContainer& TagContainer) const override { TagContainer = TagSpawnManager; return; }

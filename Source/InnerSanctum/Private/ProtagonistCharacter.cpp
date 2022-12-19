@@ -10,9 +10,9 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Components/WidgetComponent.h"
 #include "InteractableBase.h"
-#include "InteractInterface.h"
 #include "HealthComponent.h"
 #include "InventoryComponent.h"
+#include "InteractionPromptWidget.h"
 
 
 // Initialization and construction
@@ -47,8 +47,8 @@ AProtagonistCharacter::AProtagonistCharacter()
 void AProtagonistCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
     Super::SetupPlayerInputComponent(PlayerInputComponent);
-    PlayerInputComponent->BindAction("InteractE", EInputEvent::IE_Pressed, this, &AProtagonistCharacter::CallInteraction);
-    PlayerInputComponent->BindAction("InteractSpace", EInputEvent::IE_Pressed, this, &AProtagonistCharacter::CallMoveInteraction);
+    PlayerInputComponent->BindAction<FInteractionInputDelegate>("InteractE", EInputEvent::IE_Pressed, this, &AProtagonistCharacter::CallInteraction, InteractionType::EButton);
+    PlayerInputComponent->BindAction<FInteractionInputDelegate>("InteractSpace", EInputEvent::IE_Pressed, this, &AProtagonistCharacter::CallInteraction, InteractionType::SpaceButton);
     PlayerInputComponent->BindAction("ToggleDraw", EInputEvent::IE_Pressed, this, &AProtagonistCharacter::ToggleDrawEquippedItem);
     PlayerInputComponent->BindAction("UseItem", EInputEvent::IE_Pressed, this, &AProtagonistCharacter::UseEquippedItem);
 }
@@ -129,12 +129,24 @@ void AProtagonistCharacter::CastInteractableSphereTrace()
         }
     }
 }
-void AProtagonistCharacter::UpdateInteractionWidget_Implementation(AActor* InteractableActor,FVector TraceImpactPoint)
+void AProtagonistCharacter::UpdateInteractionWidget(AActor* InteractableActor,FVector TraceImpactPoint)
 {
     if(InteractableActor)
     {
+        FText temp;
         wInteractPrompt->SetVisibility(true);
         wInteractPrompt->SetWorldLocation(FMath::VInterpTo(wInteractPrompt->GetComponentLocation(),TraceImpactPoint,GetWorld()->GetDeltaSeconds(),250.f));
+        if(!Cast<UInteractionPromptWidget>(wInteractPrompt->GetUserWidgetObject()))
+        {
+            UE_LOG(LogTemp, Display, TEXT("Protagonist Character: UserWidget is NULL"));    
+            return;
+        }
+        temp = IInteractInterface::Execute_GetPromptDescriptionE(InteractableActor);
+        UE_LOG(LogTemp, Display, TEXT("Protagonist Character: Calling Set Prompt Description"));
+        Cast<UInteractionPromptWidget>(wInteractPrompt->GetUserWidgetObject())->SetPromptDescriptionE(temp);
+        temp = IInteractInterface::Execute_GetPromptDescriptionSpace(InteractableActor);
+        UE_LOG(LogTemp, Display, TEXT("Protagonist Character: Calling Set Prompt Description"));
+        Cast<UInteractionPromptWidget>(wInteractPrompt->GetUserWidgetObject())->SetPromptDescriptionSpace(temp);
     }
     else
         wInteractPrompt->SetVisibility(false);
@@ -151,27 +163,25 @@ void AProtagonistCharacter::StartSprint()
 }
 // Interaction Bindings
 
-void AProtagonistCharacter::CallInteraction()
+void AProtagonistCharacter::CallInteraction(InteractionType ButtonPressed)
 {
     if(FocusedActor)
     {
-        UE_LOG(LogTemp, Display, TEXT("Interacting E"));
-        if(IInteractInterface::Execute_GetInteractionType(FocusedActor) == InteractionType::EButton)
-            IInteractInterface::Execute_DoInteract(FocusedActor, this);
-    }
-}
-void AProtagonistCharacter::CallMoveInteraction()
-{
-    if(FocusedActor)
-    {
-        UE_LOG(LogTemp, Display, TEXT("Interacting Space"));
-        if(IInteractInterface::Execute_GetInteractionType(FocusedActor) == InteractionType::SpaceButton)
+        InteractionType FocusedActorInteractType = IInteractInterface::Execute_GetInteractionType(FocusedActor);
+        if(ButtonPressed == InteractionType::EButton)
         {
-            IInteractInterface::Execute_DoInteract(FocusedActor,this);
+            UE_LOG(LogTemp, Display, TEXT("Interacting with key: E"));
         }
+        else
+        {
+            UE_LOG(LogTemp, Display, TEXT("Interacting with key: space"));
+        }
+        if( FocusedActorInteractType == ButtonPressed || FocusedActorInteractType == InteractionType::DualInteraction )
+            IInteractInterface::Execute_DoInteract(FocusedActor, this, ButtonPressed);
     }
 }
 
+// Equipment
 void AProtagonistCharacter::SetIsEquipReady(bool newReady)
 {
     bIsReadyToUseEquip = newReady;

@@ -28,6 +28,7 @@ enum ERoomShape
 };
 
 class UTextRenderComponent;
+class UArrowComponent;
 UCLASS()
 class INNERSANCTUM_API ARoomBox : public AActor, public IGameplayTagAssetInterface
 {
@@ -39,11 +40,19 @@ private:
 	UShapeComponent* RoomCollisionAreaShape;
 	UPROPERTY(EditAnywhere, Category = "Room Area")
 	TEnumAsByte<ERoomShape> RoomShape = ERoomShape::Box;
-	UPROPERTY(EditAnywhere, Category = "Room Spawn", meta=(DisplayName="Has Limited Spawns"))
+	UPROPERTY(EditAnywhere, Category = "Room Spawn", meta=(DisplayName="Has Limited Spawnable Actors"))
 	bool bLimitedSpawn = false;
 	UPROPERTY(EditAnywhere, Category = "Room Spawn", meta=(EditCondition="bLimitedSpawn"))
 	uint8 maxSpawnableActors = 0;
 	uint8 currentlySpawnedActors = 0;
+	// UPROPERTY(EditAnywhere, Category = "Room Spawn", meta=(DisplayName="Use Fixed Spawn Points"))
+	// bool bHasFixedSpawnPoints = false;
+	// UPROPERTY(EditAnywhere, Category = "Room Spawn", meta=(DisplayName="Use Fixed Spawn Only", EditCondition="bHasFixedSpawnPoints"))
+	// bool bFixedSpawnPointsOnly = false;
+	// UPROPERTY(EditAnywhere, Category = "Room Spawn", meta=(DisplayName="Objects Spawn Points", EditCondition="bHasFixedSpawnPoints"))
+	// TArray<UArrowComponent*> tObjectsSpawnPoints;
+	// UPROPERTY(EditAnywhere, Category = "Room Spawn", meta=(DisplayName="Characters Spawn Points", EditCondition="bHasFixedSpawnPoints"))
+	// TArray<UArrowComponent*> tCharactersSpawnPoints;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Tags", meta=(AllowPrivateAccess="true"))
 	FGameplayTagContainer TagSpawnManager;
 	UPROPERTY(EditAnywhere, Category = "Debug")

@@ -26,5 +26,6 @@ class INNERSANCTUM_API AInnerSanctumGameModeBase : public AGameModeBase
 	public:
 		UFUNCTION()
 		void ActorKilled(ABaseCharacter* deadCharacter);
-		// UFUNCTION(BlueprintCallable)
+		UFUNCTION(BlueprintCallable)
+		void PlayerDeathNotification(AProtagonistCharacter* deadPlayer);
 };

@@ -72,19 +72,19 @@ void ABaseCharacter::ToggleCrouch()
     }
 }
 
-void ABaseCharacter::BeginResting()
-{
-    UE_LOG(LogTemp, Display, TEXT("Base Character: Begin resting"));
-    bIsResting = true;
-    GetWorldTimerManager().SetTimer(tHealthRecoveryTimer,this,&ABaseCharacter::HealWhileResting,fHealthRecoveryDelay,true);
-}
-void ABaseCharacter::HealWhileResting()
-{
-    uHealthComponent->HealHealth(fHealthRecoveryWhileResting);
-}
-void ABaseCharacter::StopResting()
-{
-    UE_LOG(LogTemp, Display, TEXT("Base Character: Stop resting"));
-    bIsResting = false;
-    GetWorld()->GetTimerManager().ClearTimer(tHealthRecoveryTimer);
-}
+// void ABaseCharacter::BeginResting()
+// {
+//     UE_LOG(LogTemp, Display, TEXT("Base Character: Begin resting"));
+//     bIsResting = true;
+//     GetWorldTimerManager().SetTimer(tHealthRecoveryTimer,this,&ABaseCharacter::HealWhileResting,fHealthRecoveryDelay,true);
+// }
+// void ABaseCharacter::HealWhileResting()
+// {
+//     uHealthComponent->HealHealth(fHealthRecoveryWhileResting);
+// }
+// void ABaseCharacter::StopResting()
+// {
+//     UE_LOG(LogTemp, Display, TEXT("Base Character: Stop resting"));
+//     bIsResting = false;
+//     GetWorld()->GetTimerManager().ClearTimer(tHealthRecoveryTimer);
+// }

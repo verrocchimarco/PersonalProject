@@ -8,6 +8,7 @@
 #include "Components/TextRenderComponent.h"
 #include "Kismet/KismetMathLibrary.h"
 #include "EnvironmentAffectedInterface.h"
+#include "Components/ArrowComponent.h"
 
 UE_DEFINE_GAMEPLAY_TAG(TAG_RoomManagement, 		"RoomManagement");
 UE_DEFINE_GAMEPLAY_TAG(TAG_AffectsActors, 		"RoomManagement.AffectsActors");
