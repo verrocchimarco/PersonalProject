@@ -219,6 +219,24 @@ bool UInventoryComponent::SwitchInventoryItems(int firstItemIndex, bool isFirstI
 	AUsableObjects *pocketsItem, *backpackItem;
 	int swapSizeResultPockets, swapSizeResultBackpack;
 	auto getItem = [](int& index, TArray<AUsableObjects*>& inventory){ return (inventory.IsValidIndex(index) ? inventory[index] : nullptr);	};
+	auto swapEquippedItemLocation = [&]() 
+									{
+										int32 index = INDEX_NONE;
+										bool isBackpack = false;
+										if( (index = TBackpackHeldItems.Find(EquippedItem)) != INDEX_NONE )
+										{
+											isBackpack = true;
+										}
+										else if( (index = TPocketsHeldItems.Find(EquippedItem)) != INDEX_NONE )
+										{
+											isBackpack = false;
+										}
+										if(index != INDEX_NONE)
+										{
+											EquippedItemLocation.Key = index; EquippedItemLocation.Value = isBackpack;
+										}
+									};
+	
 	int logb1 = isFirstItemInBackpack ? 1 : 0;
 	int logb2 = isSecondItemInBackpack ? 1 : 0;
 	UE_LOG(LogTemp, Display, TEXT("Inventory Component:  Swaprequested.\nItem 1 index:[%d] isBackpack[%d]\nItem 2 index:[%d] isBackpack[%d]"),firstItemIndex,logb1,secondItemIndex,logb2);
@@ -229,6 +247,8 @@ bool UInventoryComponent::SwitchInventoryItems(int firstItemIndex, bool isFirstI
 		{
 			UE_LOG(LogTemp, Display, TEXT("Inventory Component:  Swapnot needed. Both in backpack"));
 			TBackpackHeldItems.Swap(firstItemIndex,secondItemIndex);
+			swapEquippedItemLocation();
+			UE_LOG(LogTemp, Display, TEXT("Post swap: Equipped ItemIndex: %d, ItemLocationIsBackpack: %d"),EquippedItemLocation.Key,EquippedItemLocation.Value);
 			return true;
 		}
 		else
@@ -243,6 +263,8 @@ bool UInventoryComponent::SwitchInventoryItems(int firstItemIndex, bool isFirstI
 		{
 			UE_LOG(LogTemp, Display, TEXT("Inventory Component:  Swapnot needed. Both in pockets"));
 			TPocketsHeldItems.Swap(firstItemIndex,secondItemIndex);
+			swapEquippedItemLocation();
+			UE_LOG(LogTemp, Display, TEXT("Post swap: Equipped ItemIndex: %d, ItemLocationIsBackpack: %d"),EquippedItemLocation.Key,EquippedItemLocation.Value);
 			return true;
 		}
 		else
@@ -281,6 +303,8 @@ bool UInventoryComponent::SwitchInventoryItems(int firstItemIndex, bool isFirstI
 			TPocketsHeldItems.Add_GetRef(backpackItem);
 			fAvailablePocketsSpace = swapSizeResultPockets;
 			fAvailableBackpackSpace = swapSizeResultBackpack;
+			swapEquippedItemLocation();
+			UE_LOG(LogTemp, Display, TEXT("Post swap: Equipped ItemIndex: %d, ItemLocationIsBackpack: %d"),EquippedItemLocation.Key,EquippedItemLocation.Value);
 			return true;
 		}
 		else
@@ -300,6 +324,8 @@ bool UInventoryComponent::SwitchInventoryItems(int firstItemIndex, bool isFirstI
 			TPocketsHeldItems.Remove(pocketsItem);
 			fAvailableBackpackSpace = swapSizeResultBackpack;
 			fAvailablePocketsSpace += pocketsItem->GetInventoryDetails().iSlotSize;
+			swapEquippedItemLocation();
+			UE_LOG(LogTemp, Display, TEXT("Post swap: Equipped ItemIndex: %d, ItemLocationIsBackpack: %d"),EquippedItemLocation.Key,EquippedItemLocation.Value);
 			return true;
 		}
 		else
@@ -319,6 +345,8 @@ bool UInventoryComponent::SwitchInventoryItems(int firstItemIndex, bool isFirstI
 			TBackpackHeldItems.Remove(backpackItem);
 			fAvailablePocketsSpace = swapSizeResultPockets;
 			fAvailableBackpackSpace += backpackItem->GetInventoryDetails().iSlotSize;
+			swapEquippedItemLocation();
+			UE_LOG(LogTemp, Display, TEXT("Post swap: Equipped ItemIndex: %d, ItemLocationIsBackpack: %d"),EquippedItemLocation.Key,EquippedItemLocation.Value);
 			return true;
 		}
 		else

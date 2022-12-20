@@ -142,10 +142,8 @@ void AProtagonistCharacter::UpdateInteractionWidget(AActor* InteractableActor,FV
             return;
         }
         temp = IInteractInterface::Execute_GetPromptDescriptionE(InteractableActor);
-        UE_LOG(LogTemp, Display, TEXT("Protagonist Character: Calling Set Prompt Description"));
         Cast<UInteractionPromptWidget>(wInteractPrompt->GetUserWidgetObject())->SetPromptDescriptionE(temp);
         temp = IInteractInterface::Execute_GetPromptDescriptionSpace(InteractableActor);
-        UE_LOG(LogTemp, Display, TEXT("Protagonist Character: Calling Set Prompt Description"));
         Cast<UInteractionPromptWidget>(wInteractPrompt->GetUserWidgetObject())->SetPromptDescriptionSpace(temp);
     }
     else
