@@ -5,9 +5,12 @@ Saved
 Content/Megascans
 Content/MetaHumans
 Content/MSPresets
-Content/Characters
-Content/UE_Characters
 Content/Weapon_Pack
+Content/Blueprints
+Content/Animations
+Content/Weapon_Pack
+Content/Maps
+Packages
 .vscode
 .vs
 *.VC.db
