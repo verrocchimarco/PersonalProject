@@ -35,6 +35,8 @@ class INNERSANCTUM_API UInventoryComponent : public UActorComponent
         TArray<AUsableObjects*> TBackpackHeldItems;
         UPROPERTY()
         TArray<UUpgrade*> TUpgrades;
+        const uint8_t nQuickItems = 4;
+        TMap<int,TPair<int,bool>> TQuickItemsMap;
         AUsableObjects* EquippedItem = nullptr;
         TPair<int,bool> EquippedItemLocation = TPair<int,bool>(-1,false);
         bool bIsEquippedItemDrawn = false;
@@ -69,10 +71,13 @@ class INNERSANCTUM_API UInventoryComponent : public UActorComponent
         bool hasBackpack() const { return bHasBackpack; }
         UFUNCTION(BlueprintCallable, BlueprintPure)
         FInventoryItem  GetEquippedItemData() const { if(EquippedItem) return EquippedItem->GetInventoryDetails(); else return FInventoryItem() ; }
+        TMap<int,TPair<int,bool>> GetQuickItemsMap() const { return TQuickItemsMap; }
         
         // Equipped item getters
         UFUNCTION(BlueprintCallable, BlueprintPure)
         AUsableObjects* GetEquippedItem() const { return EquippedItem; }
+        UFUNCTION(BlueprintCallable)
+        TSubclassOf<AUsableObjects> GetItemAtIndex(int index, bool isBackpackInventory);
         AUsableObjects* GetItemRefAtIndex(int index, bool isBackpackInventory);
         UFUNCTION(BlueprintCallable, BlueprintPure)
         bool IsEquippedItemDrawn() const { return bIsEquippedItemDrawn; }
@@ -98,8 +103,6 @@ class INNERSANCTUM_API UInventoryComponent : public UActorComponent
         UFUNCTION(BlueprintCallable)
         bool UseItemAtIndex(int index, bool isBackpackInventory);
         UFUNCTION(BlueprintCallable)
-        TSubclassOf<AUsableObjects> GetItemAtIndex(int index, bool isBackpackInventory);
-        UFUNCTION(BlueprintCallable)
         bool SwitchInventoryItems(int firstItemIndex, bool isFirstItemInBackpack, int secondItemIndex, bool isSecondItemInBackpack);
         
         // Equipped item Management
@@ -111,6 +114,7 @@ class INNERSANCTUM_API UInventoryComponent : public UActorComponent
         UFUNCTION(BlueprintCallable, BlueprintPure)
         bool IsEquippedItem(int index, bool isBackpackInventory);
         void ToggleDrawEquippedItem();
+        
         // Upgrades Management
         UFUNCTION(BlueprintCallable)
         bool AddUpgrade(UUpgrade* newUpgrade);
@@ -126,4 +130,22 @@ class INNERSANCTUM_API UInventoryComponent : public UActorComponent
         void SetBackpackMesh(UStaticMesh* newBackpackMesh);
         UFUNCTION(BlueprintCallable,BlueprintPure)
         UStaticMesh* GetBackpackMesh() const { return BackpackMesh;}
+
+        // Item Handling
+        UFUNCTION(BlueprintCallable,BlueprintPure)
+        bool CanBeDropped(ItemCategory itemCategory) const { return itemCategory == HealingItem || itemCategory == Weapon;};
+        UFUNCTION(BlueprintCallable,BlueprintPure)
+        bool CanBeEquipped(ItemCategory itemCategory) const { return itemCategory == HealingItem || itemCategory == Weapon;};
+        UFUNCTION(BlueprintCallable,BlueprintPure)
+        bool CanBeUsed(ItemCategory itemCategory) const { return itemCategory == HealingItem || itemCategory == KeyItem || itemCategory == GenericItem;};
+        
+        // QuickItem Management
+        UFUNCTION(BlueprintCallable)
+        bool SetQuickItem(int quickItemIndex, int itemIndex, bool isBackpackInventory);
+        UFUNCTION(BlueprintCallable)
+        bool UnsetQuickItem(int quickItemIndex);
+        UFUNCTION(BlueprintCallable)
+        bool EquipQuickItem(int quickItemIndex);
+        UFUNCTION(BlueprintCallable, BlueprintPure)
+        int  GetQuickItemIndex(int itemIndex, bool isBackpackInventory);
 };

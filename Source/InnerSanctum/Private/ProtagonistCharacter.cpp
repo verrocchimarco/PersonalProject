@@ -49,6 +49,10 @@ void AProtagonistCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInp
     Super::SetupPlayerInputComponent(PlayerInputComponent);
     PlayerInputComponent->BindAction<FInteractionInputDelegate>("InteractE", EInputEvent::IE_Pressed, this, &AProtagonistCharacter::CallInteraction, InteractionType::EButton);
     PlayerInputComponent->BindAction<FInteractionInputDelegate>("InteractSpace", EInputEvent::IE_Pressed, this, &AProtagonistCharacter::CallInteraction, InteractionType::SpaceButton);
+    PlayerInputComponent->BindAction<FQuickItemSelect>("QuickItem1", EInputEvent::IE_Pressed, this, &AProtagonistCharacter::EquipQuickItem, QuickItem1);
+    PlayerInputComponent->BindAction<FQuickItemSelect>("QuickItem2", EInputEvent::IE_Pressed, this, &AProtagonistCharacter::EquipQuickItem, QuickItem2);
+    PlayerInputComponent->BindAction<FQuickItemSelect>("QuickItem3", EInputEvent::IE_Pressed, this, &AProtagonistCharacter::EquipQuickItem, QuickItem3);
+    PlayerInputComponent->BindAction<FQuickItemSelect>("QuickItem4", EInputEvent::IE_Pressed, this, &AProtagonistCharacter::EquipQuickItem, QuickItem4);
     PlayerInputComponent->BindAction("ToggleDraw", EInputEvent::IE_Pressed, this, &AProtagonistCharacter::ToggleDrawEquippedItem);
     PlayerInputComponent->BindAction("UseItem", EInputEvent::IE_Pressed, this, &AProtagonistCharacter::UseEquippedItem);
 }
@@ -194,7 +198,6 @@ void AProtagonistCharacter::SetIsEquipReady(bool newReady)
     }
 }
 
-// 
 void AProtagonistCharacter::ToggleDrawEquippedItem()
 {
     uInventoryComponent->ToggleDrawEquippedItem();
@@ -208,4 +211,15 @@ void AProtagonistCharacter::UseEquippedItem()
         uInventoryComponent->UseEquippedItem();
     }
     UE_LOG(LogTemp, Display, TEXT("Is Equip still drawn: %d"),uInventoryComponent->IsEquippedItemDrawn());
+}
+
+bool AProtagonistCharacter::IsDead() const
+{
+    return uHealthComponent->IsDead();
+}
+
+void AProtagonistCharacter::EquipQuickItem(QuickItem selectedItem)
+{
+    UE_LOG(LogTemp, Display, TEXT("You're trying to equip the quick item"));
+    uInventoryComponent->EquipQuickItem(selectedItem);
 }

@@ -17,11 +17,20 @@ class UInventoryComponent;
 class USkeletalMeshComponent;
 class USkeletalMesh;
 class UInteractionPromptWidget;
+
+enum QuickItem
+{
+	QuickItem1 = 1,
+	QuickItem2,
+	QuickItem3,
+	QuickItem4
+};
 UCLASS()
 class INNERSANCTUM_API AProtagonistCharacter : public ABaseCharacter
 {
 	GENERATED_BODY()
 	DECLARE_DELEGATE_OneParam(FInteractionInputDelegate, InteractionType);
+	DECLARE_DELEGATE_OneParam(FQuickItemSelect, QuickItem);
 	public:	
 		// Sets default values for this character's properties
 		AProtagonistCharacter();
@@ -85,7 +94,7 @@ class INNERSANCTUM_API AProtagonistCharacter : public ABaseCharacter
 		UFUNCTION(BlueprintCallable, BlueprintPure)
 		FString GetSecondaryItemBoneSocket() const { return sLeftArmSocket; }
 		UStaticMeshComponent* GetBackpackMesh() const { return uBackpackMesh; }
-		
+		bool IsDead() const;
 		// Movement
 		virtual void StartSprint() override;
 		
@@ -97,4 +106,5 @@ class INNERSANCTUM_API AProtagonistCharacter : public ABaseCharacter
 		void SetIsEquipReady(bool newReady);
 		void ToggleDrawEquippedItem();
 		void UseEquippedItem();
+		void EquipQuickItem(QuickItem selectedItem);
 };

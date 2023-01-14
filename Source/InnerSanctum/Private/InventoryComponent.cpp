@@ -13,6 +13,7 @@ UInventoryComponent::UInventoryComponent()
 	PrimaryComponentTick.bCanEverTick = true;
 	TPocketsHeldItems.Reserve(PocketsInventorySize);
 	TBackpackHeldItems.Reserve(BackpackInventorySize);
+	TQuickItemsMap.Reserve(nQuickItems);
 	fAvailablePocketsSpace = PocketsInventorySize;
 	fAvailableBackpackSpace = BackpackInventorySize;
 }
@@ -183,6 +184,8 @@ bool UInventoryComponent::UseItemAtIndex(int index, bool isBackpackInventory)
 	}
 	return usageSuccessful;
 }
+
+// Returns the item pointer
 AUsableObjects* UInventoryComponent::GetItemRefAtIndex(int index, bool isBackpackInventory)
 {
 	if(!isBackpackInventory && TPocketsHeldItems.IsValidIndex(index))
@@ -199,6 +202,7 @@ AUsableObjects* UInventoryComponent::GetItemRefAtIndex(int index, bool isBackpac
 	}
 }
 
+// Returns the class defaults of the item.
 TSubclassOf<AUsableObjects> UInventoryComponent::GetItemAtIndex(int index, bool isBackpackInventory)
 {
 	TSubclassOf<AUsableObjects> ObjectDefaults = nullptr;
@@ -520,7 +524,91 @@ void UInventoryComponent::SetBackpackMesh(UStaticMesh* newBackpackMesh)
 	{
 		UE_LOG(LogTemp, Display, TEXT("Inventory Component: No backpack mesh defined"));
 	}
-}	
+}
+
+bool UInventoryComponent::SetQuickItem(int quickItemIndex, int itemIndex, bool isBackpackInventory)
+{
+	AUsableObjects* requestedItem = GetItemRefAtIndex(itemIndex,isBackpackInventory);
+	int pre_existingIndex = -1;
+	UE_LOG(LogTemp, Display, TEXT("Inventory Component: Attempting to set quick item at index %d using character item: index[%d] backpack[%d]"),quickItemIndex,itemIndex,isBackpackInventory);
+	if(requestedItem && CanBeEquipped(requestedItem->GetInventoryDetails().sItemType.GetValue()) && (quickItemIndex >= 0 && quickItemIndex <5))
+	{
+		// If the requestedItem is already in the QuickItem cycle, remove it from the previous QuickItem index and then add it to the new requested index
+		if((pre_existingIndex = GetQuickItemIndex(itemIndex, isBackpackInventory)) > -1)
+		{
+			UnsetQuickItem(pre_existingIndex);
+		}
+		// Prevent setting a backpack item as quick item if the backpack has been lost
+		if(isBackpackInventory && !bHasBackpack)
+		{
+			return false;
+		}
+		else
+		{
+			TQuickItemsMap.FindOrAdd(quickItemIndex) = TPair<int,bool>(itemIndex,isBackpackInventory);
+			UE_LOG(LogTemp, Display, TEXT("Inventory Component: Quick item at index %d has been set to item: index[%d] backpack[%d]"),quickItemIndex,itemIndex,isBackpackInventory);
+			return true;
+		}
+	}
+	else
+	{
+		return false;
+	}
+}
+bool UInventoryComponent::UnsetQuickItem(int quickItemIndex)
+{
+	UE_LOG(LogTemp, Display, TEXT("Inventory Component: Attempting to unset quick item at index %d"),quickItemIndex);
+	if(quickItemIndex > 0 && quickItemIndex <5)
+	{
+		TQuickItemsMap.FindOrAdd(quickItemIndex) = TPair<int,bool>(-1,false);
+		UE_LOG(LogTemp, Display, TEXT("Inventory Component: Quick item at index %d has been unset"),quickItemIndex);
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+
+// Selects a quick item and forces the character to draw it
+bool UInventoryComponent::EquipQuickItem(int quickItemIndex)
+{
+	UE_LOG(LogTemp, Display, TEXT("Inventory Component: Attempting to equip quick item at index %d"),quickItemIndex);
+	if(quickItemIndex > 0 && quickItemIndex <5)
+	{
+		if(EquipItem(TQuickItemsMap[quickItemIndex].Key, TQuickItemsMap[quickItemIndex].Value))
+		{
+			if(!bIsEquippedItemDrawn)
+			{
+				bIsEquippedItemDrawn = EquippedItem->ActivateItem();
+			}
+			return bIsEquippedItemDrawn;
+			
+		}
+		else
+		{
+			return false;
+		}
+	}
+	else
+	{
+		return false;
+	}
+}
+
+// Returns the quick item index for a given item. If the item is not assigned to the QuickItems map, returns -1
+int  UInventoryComponent::GetQuickItemIndex(int itemIndex, bool isBackpackInventory)
+{
+	UE_LOG(LogTemp, Display, TEXT("Inventory Component: Getting quick item index for character item: index[%d] backpack[%d]"),itemIndex,isBackpackInventory);
+	for(auto& quickItemMapping : TQuickItemsMap)
+	{
+		if(quickItemMapping.Value.Key == itemIndex && quickItemMapping.Value.Value == isBackpackInventory)
+		{
+			return quickItemMapping.Key;
+		}
+	}
+	return -1;
+}
 void UInventoryComponent::GameInstanceInit()
 {
 	UInnerSanctumGameInstance* gameInstance = Cast<UInnerSanctumGameInstance>(GetWorld()->GetGameInstance());
@@ -566,4 +654,6 @@ void UInventoryComponent::GameInstanceInit()
 			EquipItem(EquippedItemLocation.Key, EquippedItemLocation.Value);
 		}
 	}
+	// Retrieve quick item settings
+	TQuickItemsMap = gameInstance->GetPlayerQuickItems();
 }

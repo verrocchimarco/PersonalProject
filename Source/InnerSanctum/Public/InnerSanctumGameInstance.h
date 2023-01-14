@@ -37,6 +37,7 @@ class INNERSANCTUM_API UInnerSanctumGameInstance : public UGameInstance
 		UPROPERTY()
         TArray<TSubclassOf<UUpgrade>> PlayerUpgrades;
 		TPair<int,bool> EquippedItemLocation = TPair<int,bool>(-1,false);
+		TMap<int,TPair<int,bool>> PlayerQuickItems;
 		UPROPERTY()
 		FName ActiveRespawnPointTag = TEXT("EntryPoint");
 	public:
@@ -59,6 +60,7 @@ class INNERSANCTUM_API UInnerSanctumGameInstance : public UGameInstance
         TArray<TSubclassOf<AUsableObjects>> GetPlayerBackpackItems() 	const { return PlayerBackpackItems;}
         TArray<TSubclassOf<UUpgrade>> 		GetPlayerUpgrades() 		const { return PlayerUpgrades;}
 		TPair<int,bool> 					GetEquippedItemLocation() 	const { return EquippedItemLocation;}
+		TMap<int,TPair<int,bool>>			GetPlayerQuickItems()		const { return PlayerQuickItems; }
 		bool								GetPlayerHasBackpack()		const { return bPlayerHasBackpack;}
 		void								SavePlayerInventory(AProtagonistCharacter* protagonistCharacter, bool isDead);
 		UFUNCTION()

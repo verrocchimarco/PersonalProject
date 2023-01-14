@@ -97,6 +97,7 @@ void UInnerSanctumGameInstance::SavePlayerInventory(AProtagonistCharacter* prota
     PlayerPocketsItems.Empty();
     PlayerBackpackItems.Empty();
     PlayerUpgrades.Empty();
+    PlayerQuickItems.Empty();
     for(auto& pocketItem : playerInventory->GetPocketsHeldItems())
     {
         UE_LOG(LogProcess, Display, TEXT("GameInstance: copying pocket item %s"),*(pocketItem->GetName()));
@@ -130,5 +131,15 @@ void UInnerSanctumGameInstance::SavePlayerInventory(AProtagonistCharacter* prota
     {
         bPlayerHasBackpack = playerInventory->hasBackpack();
         LostBackpackMesh = nullptr;
+    }
+    // Store player quick items selection. Remove backpack items from the quick items
+    PlayerQuickItems = playerInventory->GetQuickItemsMap();
+    for(auto& quickItem : PlayerQuickItems)
+    {
+        if(quickItem.Value.Value == true )
+        {
+            quickItem.Value.Key = -1; // invalid index
+            quickItem.Value.Value = false; // default (item is not in backpack)
+        }
     }
 }
