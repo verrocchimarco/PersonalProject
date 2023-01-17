@@ -33,12 +33,19 @@ AProtagonistCharacter::AProtagonistCharacter()
     GetCharacterMovement()->NavAgentProps.bCanCrouch = true;
     GetCharacterMovement()->NavAgentProps.bCanSwim = false;
     GetCharacterMovement()->NavAgentProps.bCanJump = false;
+    
+    // Prevent camera from rotating the character
+    bUseControllerRotationPitch = false;
+    bUseControllerRotationYaw = false;
+    bUseControllerRotationRoll = false;
 
+    // Make the spring arm follow the character rotation
     uSpringArm->bInheritPitch = true;
     uSpringArm->bInheritYaw = true;
     uSpringArm->bInheritRoll = false;
     uSpringArm->bUsePawnControlRotation = true;
     uCamera->bUsePawnControlRotation = true;
+    
     uSpringArm->bEnableCameraLag = true;
 
     sRightArmSocket = nullptr;
@@ -89,7 +96,7 @@ void AProtagonistCharacter::CastInteractableLineTrace()
         UEngineTypes::ConvertToTraceType(ECollisionChannel::ECC_Visibility),
         false,
         placeholder_array,
-        EDrawDebugTrace::ForDuration,
+        EDrawDebugTrace::None,
         ActorInInteractionRange,
         true
     );

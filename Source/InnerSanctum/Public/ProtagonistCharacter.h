@@ -40,7 +40,7 @@ class INNERSANCTUM_API AProtagonistCharacter : public ABaseCharacter
 		USpringArmComponent* uSpringArm;
 		UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Components", meta=(DisplayName="Camera",AllowPrivateAccess="true"))
 		UCameraComponent* 	 uCamera;
-		UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Components", meta=(DisplayName="Interact Prompt",AllowPrivateAccess="true"))
+		UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Components", meta=(DisplayName="Interact Prompt",AllowPrivateAccess="true"))
 		UWidgetComponent* wInteractPrompt;
 		UPROPERTY(VisibleAnywhere, BlueprintReadWrite, Category = "Components",meta=(DisplayName="Inventory Component",AllowPrivateAccess="true"))
 		UInventoryComponent* uInventoryComponent;

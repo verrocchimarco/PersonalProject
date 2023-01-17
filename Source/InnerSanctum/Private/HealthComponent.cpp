@@ -11,7 +11,7 @@ UHealthComponent::UHealthComponent()
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
-
+	fCurrentHealth 				= fMaxHealth;
 	// ...
 }
 
@@ -21,7 +21,6 @@ void UHealthComponent::BeginPlay()
 {
 	Super::BeginPlay();
 	OwnerCharacter 				= Cast<ABaseCharacter>(GetOwner());
-	fCurrentHealth 				= fMaxHealth;
 	if(bIsDismembermentActive)
 	{
 		// Set current health for body parts
@@ -29,7 +28,7 @@ void UHealthComponent::BeginPlay()
 		{
 			bodyPart.Value.BodyPartCurrentHealth = bodyPart.Value.BodyPartMaxHealth;
 		}
-		// Sanity check on bones mapping
+		// Sanity check on bones mapping 
 		for(auto bone : mBonesMatching)
 		{
 			if(!mBodyParts.Contains(bone.Value))
