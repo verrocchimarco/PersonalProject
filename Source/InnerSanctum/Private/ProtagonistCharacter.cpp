@@ -84,12 +84,12 @@ void AProtagonistCharacter::CastInteractableLineTrace()
         GetWorld(),
         uCamera->GetComponentLocation(),
         uCamera->GetComponentLocation() + uCamera->GetForwardVector()*InteractableFocusReach,
-        4.f,
-        .5f,
+        InteractableLineCapsuleRadius,
+        InteractableLineCapsuleHalfHeight,
         UEngineTypes::ConvertToTraceType(ECollisionChannel::ECC_Visibility),
         false,
         placeholder_array,
-        EDrawDebugTrace::None,
+        EDrawDebugTrace::ForDuration,
         ActorInInteractionRange,
         true
     );
@@ -121,7 +121,8 @@ void AProtagonistCharacter::CastInteractableSphereTrace()
                                             placeholder_spheretrace_array,
                                             EDrawDebugTrace::None,
                                             ActorsInFocus,
-                                            true
+                                            true,
+                                            FLinearColor::Yellow
     );
     // Enable VisibilityGlow for all actors in sphere range if they implement the Interact Interface
     for(auto hitObject : ActorsInFocus)

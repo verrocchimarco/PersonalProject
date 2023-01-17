@@ -55,8 +55,12 @@ class INNERSANCTUM_API AProtagonistCharacter : public ABaseCharacter
 		float InteractableSphereDelay = .5f;
 		UPROPERTY(EditAnywhere, Category = "Interactions")
 		float InteractableLineDelay = .09f;
+		UPROPERTY(EditAnywhere, Category = "Interactions")
+		float InteractableLineCapsuleRadius = 5.5f;
+		UPROPERTY(EditAnywhere, Category = "Interactions")
+		float InteractableLineCapsuleHalfHeight = 1.f;
 		FText InteractableDescription;
-		FTimerHandle tInteractableSphereCheckTimer,tInteractableLineCheckTimer;
+		FTimerHandle tInteractableSphereCheckTimer,tInteractableLineCheckTimer; 
 		UPROPERTY()
 		AActor* FocusedActor;
 		FCollisionQueryParams CharacterIgnoreParam;	

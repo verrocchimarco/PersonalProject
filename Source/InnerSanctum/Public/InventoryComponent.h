@@ -145,6 +145,8 @@ class INNERSANCTUM_API UInventoryComponent : public UActorComponent
         UFUNCTION(BlueprintCallable)
         bool UnsetQuickItem(int quickItemIndex);
         UFUNCTION(BlueprintCallable)
+        bool ToggleQuickItem(int quickItemIndex, int itemIndex, bool isBackpackInventory);
+        UFUNCTION(BlueprintCallable)
         bool EquipQuickItem(int quickItemIndex);
         UFUNCTION(BlueprintCallable, BlueprintPure)
         int  GetQuickItemIndex(int itemIndex, bool isBackpackInventory);
